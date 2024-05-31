@@ -1,8 +1,10 @@
 use crate::dummy::get_proog_bigint;
 use crate::{get_omegas, padd_bytes32, vk::VerifierProcessedInputs};
 use ark_bn254::{Fr, FrParameters};
-use ark_ff::{Fp256, One, Zero};
-use num_bigint::BigInt;
+use ark_ff::{Field, Fp256, One, Zero};
+use num_bigint::{BigInt, BigUint};
+
+use num_traits::FromPrimitive;
 use std::ops::{Mul, Sub};
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
@@ -32,7 +34,7 @@ impl Challenges {
         mut zh: &mut Fr,
         zhinv: &mut Fr,
         vpi: VerifierProcessedInputs,
-        pubSignals: BigInt,
+        pub_signal: Fr,
     ) -> (Challenges, Roots) {
         let mut roots = Roots {
             h0w8: [Fr::zero(); 8],
@@ -41,31 +43,23 @@ impl Challenges {
             h3w3: [Fr::zero(); 3],
         };
 
-        let mut hasher = Keccak::v256();
-
         let val1 = vpi.c0x.to_bytes_be();
         let val2 = vpi.c0y.to_bytes_be();
-        let val3 = pubSignals.to_bytes_be();
+        let pub_sig_biguint: BigUint = pub_signal.into();
+        let val3 = pub_sig_biguint.to_bytes_be();
         let val4 = get_proog_bigint().c1.0.to_bytes_be();
         let val5 = get_proog_bigint().c1.1.to_bytes_be();
 
         let mut concatenated = Vec::new();
         concatenated.extend_from_slice(&padd_bytes32(val1.1));
         concatenated.extend_from_slice(&padd_bytes32(val2.1));
-        concatenated.extend_from_slice(&padd_bytes32(val3.1));
+        concatenated.extend_from_slice(&padd_bytes32(val3));
         concatenated.extend_from_slice(&padd_bytes32(val4.1));
         concatenated.extend_from_slice(&padd_bytes32(val5.1));
 
-        hasher.update(&concatenated);
-
-        let mut out = [0u8; 32];
-        hasher.finalize(&mut out);
-        let _beta = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
-
-        let beta = Fr::from_str(&_beta.to_string()).unwrap();
+        let beta = keccak_hash(concatenated);
 
         //gamma
-        hasher = Keccak::v256();
 
         let _beta_string = beta.to_string();
         let beta_string = &_beta_string[8..8 + 64];
@@ -74,14 +68,10 @@ impl Challenges {
             .to_bytes_be();
         concatenated = Vec::new();
         concatenated.extend_from_slice(&padd_bytes32(val6.1));
-        hasher.update(&concatenated);
-        out = [0u8; 32];
-        hasher.finalize(&mut out);
-        let _gamma = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
-        let gamma = Fr::from_str(&_gamma.to_string()).unwrap();
+
+        let gamma = keccak_hash(concatenated);
 
         //xiseed
-        let mut hasher3 = Keccak::v256();
         let _gamma_string = gamma.to_string();
         let gamma_string = &_gamma_string[8..8 + 64];
         // println!("gamma_string: {:?}", gamma_string);
@@ -96,11 +86,7 @@ impl Challenges {
         concatenated.extend_from_slice(&padd_bytes32(val8.1));
         concatenated.extend_from_slice(&padd_bytes32(val9.1));
 
-        hasher3.update(&concatenated);
-        out = [0u8; 32];
-        hasher3.finalize(&mut out);
-        let _xiSeed = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
-        let xiSeed = Fr::from_str(&_xiSeed.to_string()).unwrap();
+        let xiSeed = keccak_hash(concatenated);
 
         // println!("xiSeed: {:?}", xiSeed.to_string());
 
@@ -135,21 +121,14 @@ impl Challenges {
         roots.h3w3[2] = roots.h3w3[0].mul(get_omegas().w3_2);
 
         //zh and zhInv
-        let mut xin = roots.h2w3[0].mul(roots.h2w3[0]).mul(roots.h2w3[0]);
-        let mut Xin = xin;
-        for _ in 0..24 {
-            xin = xin.mul(xin);
-        }
-
-        xin = xin.sub(Fr::one());
+        let mut Xin = roots.h2w3[0].mul(roots.h2w3[0]).mul(roots.h2w3[0]);
+        let xin = Xin.pow(&BigUint::from_u128(1 << 24).unwrap().to_u64_digits()) - Fr::one();
 
         *zh = xin;
         *zhinv = xin;
         // println!("zh: {:?}", zh.to_string());
 
         // alpha
-        let mut hasher4 = Keccak::v256();
-
         let _xiseed_string = xiSeed.to_string();
         let xiseed_string = &_xiseed_string[8..8 + 64];
         // let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16).unwrap().to_bytes_be();
@@ -191,16 +170,10 @@ impl Challenges {
         concatenated.extend_from_slice(&padd_bytes32(val24.1));
         concatenated.extend_from_slice(&padd_bytes32(val25.1));
 
-        hasher4.update(&concatenated);
-
-        out = [0u8; 32];
-        hasher4.finalize(&mut out);
-        let _alpha = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
-        let alpha = Fr::from_str(&_alpha.to_string()).unwrap();
+        let alpha = keccak_hash(concatenated);
 
         println!("alpha: {:?}", alpha.to_string());
         //y
-        let mut hasher5 = Keccak::v256();
         let _alpha_string = alpha.to_string();
         let alpha_string = &_alpha_string[8..8 + 64];
         let val26 = BigInt::parse_bytes(alpha_string.to_string().as_bytes(), 16)
@@ -214,11 +187,7 @@ impl Challenges {
         concatenated.extend_from_slice(&(val27.1));
         concatenated.extend_from_slice(&(val28.1));
 
-        hasher5.update(&concatenated);
-        out = [0u8; 32];
-        hasher5.finalize(&mut out);
-        let _y = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
-        let y = Fr::from_str(&_y.to_string()).unwrap();
+        let y = keccak_hash(concatenated);
 
         println!("y: {:?}", y.to_string());
         let challenges = Challenges {
@@ -232,6 +201,18 @@ impl Challenges {
         };
         (challenges, roots)
     }
+}
+
+fn keccak_hash(bytes: Vec<u8>) -> Fr {
+    let mut hasher = Keccak::v256();
+    hasher.update(&bytes);
+
+    let mut out = [0u8; 32];
+    hasher.finalize(&mut out);
+    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
+
+    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+    res
 }
 
 #[cfg(test)]

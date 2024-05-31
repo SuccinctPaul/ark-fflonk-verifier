@@ -22,18 +22,18 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     // However, the resulting proof will still be valid!
     println!("cycle-tracker-start: verification");
 
-    // TODO: remove
-    let pubSignalBigInt = BigInt::parse_bytes(
-        b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
-        10,
-    )
-    .unwrap();
+    // // TODO: remove
+    // let pubSignalBigInt = BigInt::parse_bytes(
+    //     b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
+    //     10,
+    // )
+    // .unwrap();
 
     let mut zh: &mut Fr = &mut Fr::zero();
     let mut zhinv: &mut Fr = &mut Fr::zero();
 
     // 1. compute challenge
-    let (challenges, roots) = Challenges::compute(&mut zh, &mut zhinv, vpi, pubSignalBigInt);
+    let (challenges, roots) = Challenges::compute(&mut zh, &mut zhinv, vpi, pub_signal.clone());
 
     // it is similar to zhinv just more updated value
     let zinv = zhinv.clone();
