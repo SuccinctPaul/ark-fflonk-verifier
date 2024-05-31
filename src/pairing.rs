@@ -8,7 +8,7 @@ use std::ops::Add;
 use std::str::FromStr;
 
 pub fn check_pairing(
-    proof: Proof,
+    proof: &Proof,
 
     points: (
         GroupAffine<Parameters>,

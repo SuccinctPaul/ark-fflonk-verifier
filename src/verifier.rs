@@ -1,5 +1,6 @@
 use crate::challenge::Challenges;
 use crate::compute_r::compute_r;
+use crate::dummy::precompute_c0;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
 use crate::{
@@ -16,10 +17,7 @@ use std::str::FromStr;
 /// Can fail if:
 /// - the provided inverse in the proof is wrong
 /// - the pair checking is wrong
-pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
-    // NOTE: values of n larger than 186 will overflow the u128 type,
-    // resulting in output that doesn't match fibonacci sequence.
-    // However, the resulting proof will still be valid!
+pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
     println!("cycle-tracker-start: verification");
 
     // 1. compute challenge
@@ -28,6 +26,7 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let inv_tuple = Inversion::build(challenges.y, challenges.xi, challenges.zh, &roots);
+
     // 3. compute pi
     let pi = compute_pi(pub_signal, inv_tuple.eval_l1);
 
@@ -45,14 +44,6 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     );
     // 5. compute fej
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
-    let g1_x = <G1Affine as AffineCurve>::BaseField::from_str("1").unwrap();
-    let g1_y = <G1Affine as AffineCurve>::BaseField::from_str("2").unwrap();
-    let g1_affine = G1Projective::new(
-        g1_x,
-        g1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
 
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
     let points = compute_fej(
@@ -61,8 +52,8 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
         inv_tuple.denH1,
         inv_tuple.denH2,
         challenges.alpha,
-        proof.clone(),
-        g1_affine,
+        &proof,
+        precompute_c0(),
         R0,
         R1,
         R2,

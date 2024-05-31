@@ -14,7 +14,7 @@ pub fn compute_fej(
     denH1: Fr,
     denH2: Fr,
     alpha: Fr,
-    proof: Proof,
+    proof: &Proof,
     g1: GroupAffine<Parameters>,
     R0: Fr,
     R1: Fr,

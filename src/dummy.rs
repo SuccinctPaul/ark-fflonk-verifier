@@ -14,6 +14,19 @@ pub type G1Affine = <Bn254 as PairingEngine>::G1Affine;
 pub type G2Point = <Bn254 as PairingEngine>::G2Affine;
 // Proof calldata
 
+pub fn precompute_c0() -> G1Affine {
+    let g1_x = <ark_bn254::G1Affine as AffineCurve>::BaseField::from_str("1").unwrap();
+    let g1_y = <ark_bn254::G1Affine as AffineCurve>::BaseField::from_str("2").unwrap();
+    let g1_affine = G1Projective::new(
+        g1_x,
+        g1_y,
+        <G1Projective as ProjectiveCurve>::BaseField::one(),
+    )
+    .into_affine();
+
+    g1_affine
+}
+
 pub struct ProofBigInt {
     pub c1: (BigInt, BigInt),
     pub c2: (BigInt, BigInt),
