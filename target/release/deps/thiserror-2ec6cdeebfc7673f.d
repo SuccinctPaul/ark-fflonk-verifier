@@ -1,0 +1,10 @@
+/Users/paul/zkp/ark-fflonk-verifier/aaa-test/target/release/deps/libthiserror-2ec6cdeebfc7673f.rmeta: /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/lib.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/aserror.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/display.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/provide.rs
+
+/Users/paul/zkp/ark-fflonk-verifier/aaa-test/target/release/deps/libthiserror-2ec6cdeebfc7673f.rlib: /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/lib.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/aserror.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/display.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/provide.rs
+
+/Users/paul/zkp/ark-fflonk-verifier/aaa-test/target/release/deps/thiserror-2ec6cdeebfc7673f.d: /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/lib.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/aserror.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/display.rs /Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/provide.rs
+
+/Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/lib.rs:
+/Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/aserror.rs:
+/Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/display.rs:
+/Users/paul/.cargo/registry/src/mirrors.sjtug.sjtu.edu.cn-4f7dbcce21e258a2/thiserror-1.0.61/src/provide.rs:
