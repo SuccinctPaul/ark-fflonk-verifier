@@ -26,17 +26,14 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     let (challenges, roots) = Challenges::compute(vpi, pub_signal.clone());
 
     // 2. compute inversion
-    // Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
+    //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let inv_tuple = Inversion::build(challenges.y, challenges.xi, challenges.zh, &roots);
-
-    // todo remove it into calculateInversions.
-    let eval_l1 = compute_lagrange(challenges.zh, inv_tuple.eval_l1);
-
-    let pi = compute_pi(pub_signal, eval_l1);
+    // 3. compute pi
+    let pi = compute_pi(pub_signal, inv_tuple.eval_l1);
 
     println!("Verifying proof...");
 
-    // Computes r1(y) and r2(y)
+    // 4. Computes r1(y) and r2(y)
     let (R0, R1, R2) = compute_r(
         &proof,
         &challenges,
@@ -44,9 +41,9 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
         &inv_tuple,
         &pi,
         &challenges.zh,
-        &eval_l1,
+        &inv_tuple.eval_l1,
     );
-
+    // 5. compute fej
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
     let g1_x = <G1Affine as AffineCurve>::BaseField::from_str("1").unwrap();
     let g1_y = <G1Affine as AffineCurve>::BaseField::from_str("2").unwrap();
@@ -71,7 +68,7 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
         R2,
     );
 
-    // Validate all evaluations
+    // 6. Validate all evaluations
     check_pairing(proof, points, challenges);
 
     println!("cycle-tracker-end: verification");

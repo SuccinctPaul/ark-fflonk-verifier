@@ -34,15 +34,7 @@ impl Inversion {
     //      2) Check the inverse sent by the prover it is what it should be
     //      3) Compute the others inverses using the Montgomery Batched Algorithm using the inverse sent to avoid the inversion operation it does.
 
-    pub fn build(
-        y: Fr,
-        xi: Fr,
-        zhInv: Fr,
-        roots: &Roots, // h0w8: Vec<Fr>,
-                       // roots.h1w4: Vec<Fr>,
-                       // h2w3: Vec<Fr>,
-                       // h3w3: Vec<Fr>,
-    ) -> Inversion {
+    pub fn build(y: Fr, xi: Fr, zh: Fr, roots: &Roots) -> Inversion {
         // 1. compute den_h1 base
         let mut w = y.sub(roots.h1w4[0]).mul(
             y.sub(roots.h1w4[1])
@@ -74,12 +66,14 @@ impl Inversion {
         let (lis_values, denH1, denH2) = Self::inverseArray(
             denH1,
             denH2,
-            zhInv,
+            zh,
             li_s0_inv,
             li_s1_inv,
             li_s2_inv,
             &mut eval_l1,
         );
+
+        eval_l1 *= zh;
 
         Inversion {
             eval_l1,
