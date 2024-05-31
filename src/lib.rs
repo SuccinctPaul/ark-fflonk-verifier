@@ -4,6 +4,7 @@ mod challenge;
 mod dummy;
 mod inversion;
 mod pairing;
+mod verifier;
 
 pub use crate::dummy::{
     get_domain_size, get_omegas, get_proof, get_pubSignals, padd_bytes32, Omegas, Proof,
@@ -30,20 +31,7 @@ use std::ops::{Add, Mul, Neg, Sub};
 
 use num_bigint::*;
 use std::str::FromStr;
-use std::vec;
-
-use crate::challenge::{compute_challenges, Challenges};
-use crate::inversion::calculateInversions;
-use crate::pairing::check_pairing;
-use num_bigint::BigUint;
-use tiny_keccak::{Hasher, Keccak};
-
-pub struct Roots {
-    pub h0w8: [Fp256<FrParameters>; 8],
-    pub h1w4: [Fp256<FrParameters>; 4],
-    pub h2w3: [Fp256<FrParameters>; 3],
-    pub h3w3: [Fp256<FrParameters>; 3],
-}
+use tiny_keccak::Hasher;
 
 pub struct VerifierProcessedInputs {
     pub c0x: BigInt,
@@ -74,141 +62,6 @@ pub fn computePi(
     .unwrap();
 
     q.add(pi.sub(eval_l1.mul(pubSignals)))
-}
-
-pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
-    // // NOTE: values of n larger than 186 will overflow the u128 type,
-    // // resulting in output that doesn't match fibonacci sequence.
-    // // However, the resulting proof will still be valid!
-    println!("cycle-tracker-start: verification");
-
-    let mut challenges = Challenges {
-        alpha: Fr::zero(),
-        beta: Fr::zero(),
-        gamma: Fr::zero(),
-        y: Fr::zero(),
-        xiSeed: Fr::zero(),
-        xiSeed2: Fr::zero(),
-        xi: Fr::zero(),
-    };
-
-    let pubSignalBigInt = BigInt::parse_bytes(
-        b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
-        10,
-    )
-    .unwrap();
-
-    let mut zh: &mut Fp256<FrParameters> = &mut Fr::zero();
-    let mut zhinv: &mut Fp256<FrParameters> = &mut Fr::zero();
-    let mut roots = Roots {
-        h0w8: [Fr::zero(); 8],
-        h1w4: [Fr::zero(); 4],
-        h2w3: [Fr::zero(); 3],
-        h3w3: [Fr::zero(); 3],
-    };
-
-    // 1. compute challenge
-    compute_challenges(
-        &mut challenges,
-        &mut roots,
-        &mut zh,
-        &mut zhinv,
-        vpi,
-        pubSignalBigInt,
-    );
-
-    // it is similar to zhinv just more updated value
-    let zinv = zhinv.clone();
-
-    let g1_x = <G1Affine as AffineCurve>::BaseField::from_str("1").unwrap();
-
-    let g1_y = <G1Affine as AffineCurve>::BaseField::from_str("2").unwrap();
-
-    let g1_affine = G1Projective::new(
-        g1_x,
-        g1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
-
-    let h0w8: Vec<Fp256<FrParameters>> = roots.h0w8.to_vec();
-
-    let h1w4: Vec<Fp256<FrParameters>> = roots.h1w4.to_vec();
-
-    let h2w3: Vec<Fp256<FrParameters>> = roots.h2w3.to_vec();
-
-    let h3w3: Vec<Fp256<FrParameters>> = roots.h3w3.to_vec();
-
-    // 2. compute inversion
-    let mut inv_tuple = calculateInversions(
-        challenges.y,
-        challenges.xi,
-        *zhinv,
-        h0w8.clone(),
-        h1w4.clone(),
-        h2w3.clone(),
-        h3w3.clone(),
-    );
-    let mut eval_l1 = inv_tuple.0;
-    let lis_values = inv_tuple.1;
-    let denH1 = inv_tuple.2;
-    let denH2 = inv_tuple.3;
-
-    eval_l1 = compute_lagrange(*zh, eval_l1);
-
-    let pi = computePi(pub_signal, eval_l1);
-
-    println!("Verifying proof...");
-
-    // Computes r1(y) and r2(y)
-    let R0 = calculateR0(
-        challenges.xi,
-        proof.clone(),
-        challenges.y,
-        h0w8.clone(),
-        lis_values.li_s0_inv,
-    );
-    let R1 = calculateR1(
-        challenges.xi,
-        proof.clone(),
-        challenges.y,
-        pi,
-        h1w4.clone(),
-        lis_values.li_s1_inv,
-        zinv,
-    );
-    let R2 = calculateR2(
-        challenges.xi,
-        challenges.gamma,
-        challenges.beta,
-        proof.clone(),
-        challenges.y,
-        eval_l1,
-        zinv,
-        h2w3.clone(),
-        h3w3.clone(),
-        lis_values.li_s2_inv,
-    );
-    // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
-    let points = computeFEJ(
-        challenges.y,
-        h0w8.clone(),
-        denH1,
-        denH2,
-        challenges.alpha,
-        proof.clone(),
-        g1_affine,
-        R0,
-        R1,
-        R2,
-    );
-
-    check_pairing(proof, points, challenges);
-
-    println!("cycle-tracker-end: verification");
-    // sp1_zkvm::io::commit(&n);
-    // sp1_zkvm::io::commit(&a);
-    // sp1_zkvm::io::commit(&b);
 }
 
 fn calculateR0(
@@ -723,52 +576,4 @@ fn computeFEJ(
     // min + 64 -> 0
     // min + 96 -> 0
     (c2_agg, g1_acc, w1_agg)
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_fflonk_verifier() {
-        println!("cycle-tracker-start: loading");
-        let proof = get_proof();
-        let pub_signal = get_pubSignals();
-
-        let mut vpi = VerifierProcessedInputs {
-            c0x: BigInt::parse_bytes(
-                b"7005013949998269612234996630658580519456097203281734268590713858661772481668",
-                10,
-            )
-            .unwrap(),
-            c0y: BigInt::parse_bytes(
-                b"869093939501355406318588453775243436758538662501260653214950591532352435323",
-                10,
-            )
-            .unwrap(),
-            x2x1: BigInt::parse_bytes(
-                b"21831381940315734285607113342023901060522397560371972897001948545212302161822",
-                10,
-            )
-            .unwrap(),
-            x2x2: BigInt::parse_bytes(
-                b"17231025384763736816414546592865244497437017442647097510447326538965263639101",
-                10,
-            )
-            .unwrap(),
-            x2y1: BigInt::parse_bytes(
-                b"2388026358213174446665280700919698872609886601280537296205114254867301080648",
-                10,
-            )
-            .unwrap(),
-            x2y2: BigInt::parse_bytes(
-                b"11507326595632554467052522095592665270651932854513688777769618397986436103170",
-                10,
-            )
-            .unwrap(),
-        };
-
-        println!("cycle-tracker-end: loading");
-        verifier(vpi, proof, pub_signal);
-    }
 }

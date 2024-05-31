@@ -10,6 +10,7 @@ pub struct LISValues {
     pub li_s2_inv: [Fp256<FrParameters>; 6],
 }
 
+// Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
 pub fn calculateInversions(
     y: Fp256<FrParameters>,
     xi: Fp256<FrParameters>,
