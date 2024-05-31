@@ -21,28 +21,18 @@ pub struct Challenges {
     pub beta: Fr,
     pub gamma: Fr,
     pub y: Fr,
-    pub xiSeed: Fr,
-    pub xiSeed2: Fr,
+    pub xi_seed: Fr,
+    pub xi_seed_2: Fr,
     pub xi: Fr,
+    pub zh: Fr,
 }
 
 impl Challenges {
     // compute challenge and roots:
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
 
-    pub fn compute(
-        mut zh: &mut Fr,
-        zhinv: &mut Fr,
-        vpi: VerifierProcessedInputs,
-        pub_signal: Fr,
-    ) -> (Challenges, Roots) {
-        let mut roots = Roots {
-            h0w8: [Fr::zero(); 8],
-            h1w4: [Fr::zero(); 4],
-            h2w3: [Fr::zero(); 3],
-            h3w3: [Fr::zero(); 3],
-        };
-
+    pub fn compute(vpi: VerifierProcessedInputs, pub_signal: Fr) -> (Challenges, Roots) {
+        // 1.beta
         let val1 = vpi.c0x.to_bytes_be();
         let val2 = vpi.c0y.to_bytes_be();
         let pub_sig_biguint: BigUint = pub_signal.into();
@@ -59,8 +49,7 @@ impl Challenges {
 
         let beta = keccak_hash(concatenated);
 
-        //gamma
-
+        // 2.gamma
         let _beta_string = beta.to_string();
         let beta_string = &_beta_string[8..8 + 64];
         let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16)
@@ -68,10 +57,9 @@ impl Challenges {
             .to_bytes_be();
         concatenated = Vec::new();
         concatenated.extend_from_slice(&padd_bytes32(val6.1));
-
         let gamma = keccak_hash(concatenated);
 
-        //xiseed
+        // 3.xi_seed
         let _gamma_string = gamma.to_string();
         let gamma_string = &_gamma_string[8..8 + 64];
         // println!("gamma_string: {:?}", gamma_string);
@@ -81,58 +69,62 @@ impl Challenges {
         let val8 = get_proog_bigint().c2.0.to_bytes_be();
         let val9 = get_proog_bigint().c2.1.to_bytes_be();
 
-        concatenated = Vec::new();
+        let mut concatenated = Vec::new();
         concatenated.extend_from_slice(&padd_bytes32(val7.1));
         concatenated.extend_from_slice(&padd_bytes32(val8.1));
         concatenated.extend_from_slice(&padd_bytes32(val9.1));
 
-        let xiSeed = keccak_hash(concatenated);
+        let xi_seed = keccak_hash(concatenated);
 
-        // println!("xiSeed: {:?}", xiSeed.to_string());
+        // 4.xi_seed_2
+        let mut xi_seed_2 = xi_seed.mul(xi_seed);
 
-        //xiSeed2
-        let mut xiSeed2 = xiSeed.mul(xiSeed);
-        // println!("xiSeed2: {:?}", xiSeed2.to_string());
+        // 5. roots h0w8
+        let xi_seed_3 = xi_seed * xi_seed_2;
+        let h0w8 = [
+            xi_seed_3,
+            xi_seed_3 * get_omegas().w8_1,
+            xi_seed_3 * get_omegas().w8_2,
+            xi_seed_3 * get_omegas().w8_3,
+            xi_seed_3 * get_omegas().w8_4,
+            xi_seed_3 * get_omegas().w8_5,
+            xi_seed_3 * get_omegas().w8_6,
+            xi_seed_3 * get_omegas().w8_7,
+        ];
 
-        //roots h0w8
-        roots.h0w8[0] = xiSeed2.mul(xiSeed); // x^3
-        roots.h0w8[1] = roots.h0w8[0].mul(get_omegas().w8_1);
-        roots.h0w8[2] = roots.h0w8[0].mul(get_omegas().w8_2);
-        roots.h0w8[3] = roots.h0w8[0].mul(get_omegas().w8_3);
-        roots.h0w8[4] = roots.h0w8[0].mul(get_omegas().w8_4);
-        roots.h0w8[5] = roots.h0w8[0].mul(get_omegas().w8_5);
-        roots.h0w8[6] = roots.h0w8[0].mul(get_omegas().w8_6);
-        roots.h0w8[7] = roots.h0w8[0].mul(get_omegas().w8_7);
+        // 6.roots h1w4
+        let xi_seed_6 = xi_seed_3 * xi_seed_3;
+        let h1w4 = [
+            xi_seed_6,
+            xi_seed_6 * get_omegas().w4,
+            xi_seed_6 * get_omegas().w4_2,
+            xi_seed_6 * get_omegas().w4_3,
+        ];
 
-        //roots h1w4
-        roots.h1w4[0] = roots.h0w8[0].mul(roots.h0w8[0]); // x^6
-        roots.h1w4[1] = roots.h1w4[0].mul(get_omegas().w4);
-        roots.h1w4[2] = roots.h1w4[0].mul(get_omegas().w4_2);
-        roots.h1w4[3] = roots.h1w4[0].mul(get_omegas().w4_3);
+        // 7.roots h2w3
+        let xi_seed_8 = xi_seed_6 * xi_seed_2;
+        let h2w3 = [
+            xi_seed_8,
+            xi_seed_8 * get_omegas().w3,
+            xi_seed_8 * get_omegas().w3_2,
+        ];
 
-        //roots h2w3
-        roots.h2w3[0] = roots.h1w4[0].mul(xiSeed2); // x^8
-        roots.h2w3[1] = roots.h2w3[0].mul(get_omegas().w3);
-        roots.h2w3[2] = roots.h2w3[0].mul(get_omegas().w3_2);
+        // 8.roots h3w3
+        let h3w3_0 = xi_seed_8 * get_omegas().wr;
+        let h3w3 = [h3w3_0, h3w3_0 * get_omegas().w3, h3w3_0 * get_omegas().w3_2];
 
-        //roots h3w3
-        roots.h3w3[0] = roots.h2w3[0].mul(get_omegas().wr);
-        roots.h3w3[1] = roots.h3w3[0].mul(get_omegas().w3);
-        roots.h3w3[2] = roots.h3w3[0].mul(get_omegas().w3_2);
-
+        // 9. Compute xi^n
         //zh and zhInv
-        let mut Xin = roots.h2w3[0].mul(roots.h2w3[0]).mul(roots.h2w3[0]);
-        let xin = Xin.pow(&BigUint::from_u128(1 << 24).unwrap().to_u64_digits()) - Fr::one();
+        let xi = xi_seed_8 * xi_seed_8 * xi_seed_8;
+        // TODO: does here means be k=24 ?
+        // let zh = xi.pow(precomputed.n.into_bigint()) - Fr::one();
+        let zh = xi.pow(&BigUint::from_u128(1 << 24).unwrap().to_u64_digits()) - Fr::one();
 
-        *zh = xin;
-        *zhinv = xin;
-        // println!("zh: {:?}", zh.to_string());
-
-        // alpha
-        let _xiseed_string = xiSeed.to_string();
-        let xiseed_string = &_xiseed_string[8..8 + 64];
+        // 10.alpha
+        let _xi_seed_string = xi_seed.to_string();
+        let xi_seed_string = &_xi_seed_string[8..8 + 64];
         // let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16).unwrap().to_bytes_be();
-        let val10 = BigInt::parse_bytes(xiseed_string.to_string().as_bytes(), 16)
+        let val10 = BigInt::parse_bytes(xi_seed_string.to_string().as_bytes(), 16)
             .unwrap()
             .to_bytes_be();
 
@@ -172,8 +164,7 @@ impl Challenges {
 
         let alpha = keccak_hash(concatenated);
 
-        println!("alpha: {:?}", alpha.to_string());
-        //y
+        // 11.y
         let _alpha_string = alpha.to_string();
         let alpha_string = &_alpha_string[8..8 + 64];
         let val26 = BigInt::parse_bytes(alpha_string.to_string().as_bytes(), 16)
@@ -190,14 +181,22 @@ impl Challenges {
         let y = keccak_hash(concatenated);
 
         println!("y: {:?}", y.to_string());
+        let roots = Roots {
+            h0w8,
+            h1w4,
+            h2w3,
+            h3w3,
+        };
+
         let challenges = Challenges {
             alpha,
             beta,
             gamma,
             y,
-            xiSeed,
-            xiSeed2,
-            xi: Xin,
+            xi_seed,
+            xi_seed_2,
+            xi,
+            zh,
         };
         (challenges, roots)
     }

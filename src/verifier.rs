@@ -22,25 +22,18 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     // However, the resulting proof will still be valid!
     println!("cycle-tracker-start: verification");
 
-    // // TODO: remove
-    // let pubSignalBigInt = BigInt::parse_bytes(
-    //     b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
-    //     10,
-    // )
-    // .unwrap();
-
     let mut zh: &mut Fr = &mut Fr::zero();
-    let mut zhinv: &mut Fr = &mut Fr::zero();
 
     // 1. compute challenge
-    let (challenges, roots) = Challenges::compute(&mut zh, &mut zhinv, vpi, pub_signal.clone());
+    let (challenges, roots) = Challenges::compute(vpi, pub_signal.clone());
 
     // it is similar to zhinv just more updated value
+    let zhinv = challenges.zh.clone();
     let zinv = zhinv.clone();
 
     // 2. compute inversion
     // Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
-    let inv_tuple = Inversion::build(challenges.y, challenges.xi, *zhinv, &roots);
+    let inv_tuple = Inversion::build(challenges.y, challenges.xi, challenges.zh, &roots);
 
     // todo remove it into calculateInversions.
     let eval_l1 = compute_lagrange(*zh, inv_tuple.eval_l1);
