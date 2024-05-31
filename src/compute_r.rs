@@ -51,7 +51,7 @@ pub fn compute_r(
 /// where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
 /// and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
 /// and computing C0(xi)
-pub fn calculateR0(
+fn calculateR0(
     xi: Fp256<FrParameters>,
     proof: &Proof,
     y: Fp256<FrParameters>,
@@ -283,7 +283,7 @@ pub fn calculateR0(
 /// where x = {h1, h1w4, h1w4^2, h1w4^3}
 /// and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
 /// and computing T0(xi)
-pub fn calculateR1(
+fn calculateR1(
     xi: Fp256<FrParameters>,
     proof: &Proof,
     y: Fp256<FrParameters>,
@@ -367,7 +367,7 @@ pub fn calculateR1(
 /// where x = {[h2, h2w3, h2w3^2], [h3, h3w3, h3w3^2]}
 /// and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
 /// and computing T1(xi) and T2(xi)
-pub fn calculateR2(
+fn calculateR2(
     xi: Fp256<FrParameters>,
     gamma: Fp256<FrParameters>,
     beta: Fp256<FrParameters>,

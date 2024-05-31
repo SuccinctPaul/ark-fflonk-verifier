@@ -3,9 +3,8 @@ use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
 use crate::{
-    computeFEJ, computePi, compute_lagrange,
-    compute_r::{calculateR0, calculateR1, calculateR2},
-    get_proof, get_pubSignals, Proof, VerifierProcessedInputs,
+    computeFEJ, computePi, compute_lagrange, get_proof, get_pubSignals, Proof,
+    VerifierProcessedInputs,
 };
 use ark_bn254::{Fr, FrParameters, G1Affine, G1Projective};
 use ark_ec::{AffineCurve, ProjectiveCurve};
