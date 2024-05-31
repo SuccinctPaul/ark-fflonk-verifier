@@ -45,54 +45,51 @@ pub struct Proof {
     pub w1: G1Affine,
     pub w2: G1Affine,
 
-    pub eval_ql: Fp256<FrParameters>,
-    pub eval_qr: Fp256<FrParameters>,
-    pub eval_qm: Fp256<FrParameters>,
-    pub eval_qo: Fp256<FrParameters>,
-    pub eval_qc: Fp256<FrParameters>,
-    pub eval_s1: Fp256<FrParameters>,
-    pub eval_s2: Fp256<FrParameters>,
-    pub eval_s3: Fp256<FrParameters>,
-    pub eval_a: Fp256<FrParameters>,
-    pub eval_b: Fp256<FrParameters>,
-    pub eval_c: Fp256<FrParameters>,
-    pub eval_z: Fp256<FrParameters>,
-    pub eval_zw: Fp256<FrParameters>,
-    pub eval_t1w: Fp256<FrParameters>,
-    pub eval_t2w: Fp256<FrParameters>,
-    pub eval_inv: Fp256<FrParameters>,
+    pub eval_ql: Fr,
+    pub eval_qr: Fr,
+    pub eval_qm: Fr,
+    pub eval_qo: Fr,
+    pub eval_qc: Fr,
+    pub eval_s1: Fr,
+    pub eval_s2: Fr,
+    pub eval_s3: Fr,
+    pub eval_a: Fr,
+    pub eval_b: Fr,
+    pub eval_c: Fr,
+    pub eval_z: Fr,
+    pub eval_zw: Fr,
+    pub eval_t1w: Fr,
+    pub eval_t2w: Fr,
+    pub eval_inv: Fr,
 }
 
 #[derive(Debug, Clone)]
 pub struct ProofWithPubSignal {
     pub proof: Proof,
-    pub pub_signal: Fp256<FrParameters>,
+    pub pub_signal: Fr,
 }
 
 pub struct Omegas {
-    pub w1: Fp256<FrParameters>,
-    pub wr: Fp256<FrParameters>,
+    pub w1: Fr,
+    pub wr: Fr,
 
-    pub w3: Fp256<FrParameters>,
-    pub w3_2: Fp256<FrParameters>,
+    pub w3: Fr,
+    pub w3_2: Fr,
 
-    pub w4: Fp256<FrParameters>,
-    pub w4_2: Fp256<FrParameters>,
-    pub w4_3: Fp256<FrParameters>,
+    pub w4: Fr,
+    pub w4_2: Fr,
+    pub w4_3: Fr,
 
-    pub w8_1: Fp256<FrParameters>,
-    pub w8_2: Fp256<FrParameters>,
-    pub w8_3: Fp256<FrParameters>,
-    pub w8_4: Fp256<FrParameters>,
-    pub w8_5: Fp256<FrParameters>,
-    pub w8_6: Fp256<FrParameters>,
-    pub w8_7: Fp256<FrParameters>,
+    pub w8_1: Fr,
+    pub w8_2: Fr,
+    pub w8_3: Fr,
+    pub w8_4: Fr,
+    pub w8_5: Fr,
+    pub w8_6: Fr,
+    pub w8_7: Fr,
 }
 
-pub fn construct_proof(
-    proof_values: Vec<&str>,
-    pub_signal: Fp256<FrParameters>,
-) -> ProofWithPubSignal {
+pub fn construct_proof(proof_values: Vec<&str>, pub_signal: Fr) -> ProofWithPubSignal {
     let c1_x = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[0]).unwrap();
     let c1_y = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[1]).unwrap();
     let c1_affine = G1Projective::new(
@@ -439,11 +436,11 @@ pub fn get_omegas() -> Omegas {
     }
 }
 
-pub fn get_domain_size() -> Fp256<FrParameters> {
+pub fn get_domain_size() -> Fr {
     Fr::from_str("16777216").unwrap()
 }
 
-pub fn get_pubSignals() -> Fp256<FrParameters> {
+pub fn get_pubSignals() -> Fr {
     Fr::from_str("14516932981781041565586298118536599721399535462624815668597272732223874827152")
         .unwrap()
 }

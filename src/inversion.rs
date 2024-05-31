@@ -1,3 +1,4 @@
+use crate::challenge::Roots;
 use crate::{get_domain_size, get_omegas, get_proof};
 use ark_bn254::{Fr, FrParameters};
 use ark_ff::{Fp256, One, Zero};
@@ -18,9 +19,9 @@ pub struct Inversion {
 
 #[derive(Debug, PartialEq)]
 pub struct LISValues {
-    pub li_s0_inv: [Fp256<FrParameters>; 8],
-    pub li_s1_inv: [Fp256<FrParameters>; 4],
-    pub li_s2_inv: [Fp256<FrParameters>; 6],
+    pub li_s0_inv: [Fr; 8],
+    pub li_s1_inv: [Fr; 4],
+    pub li_s2_inv: [Fr; 6],
 }
 
 impl Inversion {
@@ -34,41 +35,41 @@ impl Inversion {
     //      3) Compute the others inverses using the Montgomery Batched Algorithm using the inverse sent to avoid the inversion operation it does.
 
     pub fn build(
-        y: Fp256<FrParameters>,
-        xi: Fp256<FrParameters>,
-        zhInv: Fp256<FrParameters>,
-        h0w8: Vec<Fp256<FrParameters>>,
-        h1w4: Vec<Fp256<FrParameters>>,
-        h2w3: Vec<Fp256<FrParameters>>,
-        h3w3: Vec<Fp256<FrParameters>>,
+        y: Fr,
+        xi: Fr,
+        zhInv: Fr,
+        roots: &Roots, // h0w8: Vec<Fr>,
+                       // roots.h1w4: Vec<Fr>,
+                       // h2w3: Vec<Fr>,
+                       // h3w3: Vec<Fr>,
     ) -> Inversion {
         // 1. compute den_h1 base
-        let mut w = y
-            .sub(h1w4[0])
-            .mul(y.sub(h1w4[1]).mul(y.sub(h1w4[2]).mul(y.sub(h1w4[3]))));
+        let mut w = y.sub(roots.h1w4[0]).mul(
+            y.sub(roots.h1w4[1])
+                .mul(y.sub(roots.h1w4[2]).mul(y.sub(roots.h1w4[3]))),
+        );
         // println!("w: {}", (w));
 
         let denH1 = w.clone();
 
-        w = y.sub(h2w3[0]).mul(
-            y.sub(h2w3[1])
-                .mul(y.sub(h2w3[2]))
-                .mul(y.sub(h3w3[0]).mul(y.sub(h3w3[1]).mul(y.sub(h3w3[2])))),
+        w = y.sub(roots.h2w3[0]).mul(
+            y.sub(roots.h2w3[1]).mul(y.sub(roots.h2w3[2])).mul(
+                y.sub(roots.h3w3[0])
+                    .mul(y.sub(roots.h3w3[1]).mul(y.sub(roots.h3w3[2]))),
+            ),
         );
 
         let denH2 = w.clone();
 
-        let mut li_s0_inv = Self::computeLiS0(y, h0w8);
+        let mut li_s0_inv = Self::computeLiS0(y, &roots.h0w8);
 
-        let mut li_s1_inv = Self::computeLiS1(y, h1w4);
+        let mut li_s1_inv = Self::computeLiS1(y, &roots.h1w4);
 
-        let mut li_s2_inv = Self::computeLiS2(y, xi, h2w3, h3w3);
+        let mut li_s2_inv = Self::computeLiS2(y, xi, &roots.h2w3, &roots.h3w3);
 
-        w = Fr::from_str("1").unwrap();
+        let mut w = Fr::one();
 
         let mut eval_l1 = get_domain_size().mul(xi.sub(w));
-
-        // println!("eval_l1: {}", eval_l1);
 
         let (lis_values, denH1, denH2) = Self::inverseArray(
             denH1,
@@ -88,13 +89,10 @@ impl Inversion {
         }
     }
 
-    pub fn computeLiS0(
-        y: Fp256<FrParameters>,
-        h0w8: Vec<Fp256<FrParameters>>,
-    ) -> [Fp256<FrParameters>; 8] {
+    pub fn computeLiS0(y: Fr, h0w8: &[Fr]) -> [Fr; 8] {
         let root0 = h0w8[0];
 
-        let mut den1 = Fr::from_str("1").unwrap();
+        let mut den1 = Fr::one();
         den1 = den1
             .mul(root0)
             .mul(root0)
@@ -110,7 +108,7 @@ impl Inversion {
         let mut den2;
         let mut den3;
 
-        let mut li_s0_inv: [Fp256<FrParameters>; 8] = [Fr::zero(); 8];
+        let mut li_s0_inv: [Fr; 8] = [Fr::zero(); 8];
 
         let q = Fr::from_str(
             "21888242871839275222246405745257275088548364400416034343698204186575808495617",
@@ -134,12 +132,9 @@ impl Inversion {
         li_s0_inv
     }
 
-    pub fn computeLiS1(
-        y: Fp256<FrParameters>,
-        h1w4: Vec<Fp256<FrParameters>>,
-    ) -> [Fp256<FrParameters>; 4] {
+    pub fn computeLiS1(y: Fr, h1w4: &[Fr]) -> [Fr; 4] {
         let root0 = h1w4[0];
-        let mut den1 = Fr::from_str("1").unwrap();
+        let mut den1 = Fr::one();
         den1 = den1.mul(root0).mul(root0);
 
         den1 = den1.mul(Fr::from_str("4").unwrap());
@@ -152,7 +147,7 @@ impl Inversion {
         let mut den2;
         let mut den3;
 
-        let mut li_s1_inv: [Fp256<FrParameters>; 4] = [Fr::zero(); 4];
+        let mut li_s1_inv: [Fr; 4] = [Fr::zero(); 4];
 
         for i in 0..4 {
             let coeff = ((i * 3) % 4);
@@ -165,12 +160,7 @@ impl Inversion {
         li_s1_inv
     }
 
-    pub fn computeLiS2(
-        y: Fp256<FrParameters>,
-        xi: Fp256<FrParameters>,
-        h2w3: Vec<Fp256<FrParameters>>,
-        h3w3: Vec<Fp256<FrParameters>>,
-    ) -> [Fp256<FrParameters>; 6] {
+    pub fn computeLiS2(y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
         let q = Fr::from_str(
             "21888242871839275222246405745257275088548364400416034343698204186575808495617",
         )
@@ -184,7 +174,7 @@ impl Inversion {
         let mut den2;
         let mut den3;
 
-        let mut li_s2_inv: [Fp256<FrParameters>; 6] = [Fr::zero(); 6];
+        let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
 
         for i in 0..3 {
             let coeff = ((i * 2) % 3);
@@ -206,14 +196,14 @@ impl Inversion {
     }
 
     pub fn inverseArray(
-        denH1: Fp256<FrParameters>,
-        denH2: Fp256<FrParameters>,
-        zhInv: Fp256<FrParameters>,
-        li_s0_inv: [Fp256<FrParameters>; 8],
-        li_s1_inv: [Fp256<FrParameters>; 4],
-        li_s2_inv: [Fp256<FrParameters>; 6],
-        eval_l1: &mut Fp256<FrParameters>,
-    ) -> (LISValues, Fp256<FrParameters>, Fp256<FrParameters>) {
+        denH1: Fr,
+        denH2: Fr,
+        zhInv: Fr,
+        li_s0_inv: [Fr; 8],
+        li_s1_inv: [Fr; 4],
+        li_s2_inv: [Fr; 6],
+        eval_l1: &mut Fr,
+    ) -> (LISValues, Fr, Fr) {
         // let mut local_eval_l1 = eval_l1.clone();
         let mut local_den_h1 = denH1.clone();
         let mut local_den_h2 = denH2.clone();
@@ -222,7 +212,7 @@ impl Inversion {
         let mut local_li_s1_inv = li_s1_inv.clone();
         let mut local_li_s2_inv = li_s2_inv.clone();
 
-        let mut _acc: Vec<Fp256<FrParameters>> = Vec::new();
+        let mut _acc: Vec<Fr> = Vec::new();
 
         _acc.push(zhInv.clone());
 

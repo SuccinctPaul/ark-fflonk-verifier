@@ -1,5 +1,5 @@
 use crate::dummy::get_proog_bigint;
-use crate::{get_omegas, padd_bytes32, VerifierProcessedInputs};
+use crate::{get_omegas, padd_bytes32, vk::VerifierProcessedInputs};
 use ark_bn254::{Fr, FrParameters};
 use ark_ff::{Fp256, One, Zero};
 use num_bigint::BigInt;
@@ -8,20 +8,20 @@ use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
 
 pub struct Roots {
-    pub h0w8: [Fp256<FrParameters>; 8],
-    pub h1w4: [Fp256<FrParameters>; 4],
-    pub h2w3: [Fp256<FrParameters>; 3],
-    pub h3w3: [Fp256<FrParameters>; 3],
+    pub h0w8: [Fr; 8],
+    pub h1w4: [Fr; 4],
+    pub h2w3: [Fr; 3],
+    pub h3w3: [Fr; 3],
 }
 
 pub struct Challenges {
-    pub alpha: Fp256<FrParameters>,
-    pub beta: Fp256<FrParameters>,
-    pub gamma: Fp256<FrParameters>,
-    pub y: Fp256<FrParameters>,
-    pub xiSeed: Fp256<FrParameters>,
-    pub xiSeed2: Fp256<FrParameters>,
-    pub xi: Fp256<FrParameters>,
+    pub alpha: Fr,
+    pub beta: Fr,
+    pub gamma: Fr,
+    pub y: Fr,
+    pub xiSeed: Fr,
+    pub xiSeed2: Fr,
+    pub xi: Fr,
 }
 
 impl Challenges {
@@ -29,8 +29,8 @@ impl Challenges {
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
 
     pub fn compute(
-        mut zh: &mut Fp256<FrParameters>,
-        zhinv: &mut Fp256<FrParameters>,
+        mut zh: &mut Fr,
+        zhinv: &mut Fr,
         vpi: VerifierProcessedInputs,
         pubSignals: BigInt,
     ) -> (Challenges, Roots) {
@@ -231,5 +231,62 @@ impl Challenges {
             xi: Xin,
         };
         (challenges, roots)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::padd_bytes32;
+    use ark_bn254::Fr;
+    use ark_ff::BigInteger;
+    use num_bigint::{BigInt, BigUint};
+    use std::str::FromStr;
+
+    #[test]
+    fn test_fr_to_bytes_be() {
+        let pubSignalBigInt = BigInt::parse_bytes(
+            b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
+            10,
+        )
+        .unwrap();
+        let bytes = pubSignalBigInt.to_bytes_be().1;
+        println!("expect_bytes: {:?}", bytes);
+        let expect_bigint = padd_bytes32(bytes);
+        println!("expect_bigint: {:?}", expect_bigint);
+
+        // second
+        println!("");
+        let pubSignalBigInt = BigUint::from_str(
+            "14516932981781041565586298118536599721399535462624815668597272732223874827152",
+        )
+        .unwrap();
+        let bytes = pubSignalBigInt.to_bytes_be();
+        println!("expect_bytes: {:?}", bytes);
+        let expect_biguint = padd_bytes32(bytes);
+        println!("expect_biguint: {:?}", expect_biguint);
+
+        assert_eq!(expect_biguint, expect_bigint);
+
+        println!("\n======\n");
+        let pub_sig = Fr::from_str(
+            "14516932981781041565586298118536599721399535462624815668597272732223874827152",
+        )
+        .unwrap();
+        // dones't work
+        let actual_bytes = pub_sig.0.to_bytes_be();
+        println!("actual_bytes: {:?}", actual_bytes);
+        let actual = padd_bytes32(actual_bytes);
+        println!("actual: {:?}", actual);
+
+        println!("");
+        let sig_biguint: BigUint = pub_sig.into();
+        let actual_biguint_bytes = sig_biguint.to_bytes_be();
+        println!("actual_biguint_bytes: {:?}", actual_biguint_bytes);
+        let actual_biguint_bytes = padd_bytes32(actual_biguint_bytes);
+        println!("actual_biguint_bytes: {:?}", actual_biguint_bytes);
+
+        // assert_eq!(expect_biguint, expect_bigint);
+
+        assert_eq!(actual_biguint_bytes, expect_biguint);
     }
 }

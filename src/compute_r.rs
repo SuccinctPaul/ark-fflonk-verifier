@@ -51,13 +51,7 @@ pub fn compute_r(
 /// where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
 /// and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
 /// and computing C0(xi)
-fn calculateR0(
-    xi: Fp256<FrParameters>,
-    proof: &Proof,
-    y: Fp256<FrParameters>,
-    h0w8: Vec<Fp256<FrParameters>>,
-    li_s0_inv: [Fp256<FrParameters>; 8],
-) -> Fp256<FrParameters> {
+fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) -> Fr {
     let Proof {
         eval_ql,
         eval_qr,
@@ -70,7 +64,7 @@ fn calculateR0(
         ..
     } = proof;
 
-    let mut num = Fr::from_str("1").unwrap();
+    let mut num = Fr::one();
     let y__8 = y.pow([8]);
     num = num.mul(y__8);
     num = num.add(-xi);
@@ -284,15 +278,15 @@ fn calculateR0(
 /// and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
 /// and computing T0(xi)
 fn calculateR1(
-    xi: Fp256<FrParameters>,
+    xi: Fr,
     proof: &Proof,
-    y: Fp256<FrParameters>,
-    pi: &Fp256<FrParameters>,
-    h1w4: Vec<Fp256<FrParameters>>,
-    li_s1_inv: [Fp256<FrParameters>; 4],
-    zinv: &Fp256<FrParameters>,
-) -> Fp256<FrParameters> {
-    let mut num = Fr::from_str("1").unwrap();
+    y: Fr,
+    pi: &Fr,
+    h1w4: Vec<Fr>,
+    li_s1_inv: [Fr; 4],
+    zinv: &Fr,
+) -> Fr {
+    let mut num = Fr::one();
     let Proof {
         eval_a,
         eval_b,
@@ -368,17 +362,17 @@ fn calculateR1(
 /// and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
 /// and computing T1(xi) and T2(xi)
 fn calculateR2(
-    xi: Fp256<FrParameters>,
-    gamma: Fp256<FrParameters>,
-    beta: Fp256<FrParameters>,
+    xi: Fr,
+    gamma: Fr,
+    beta: Fr,
     proof: &Proof,
-    y: Fp256<FrParameters>,
-    eval_l1: &Fp256<FrParameters>,
-    zinv: &Fp256<FrParameters>,
-    h2w3: Vec<Fp256<FrParameters>>,
-    h3w3: Vec<Fp256<FrParameters>>,
-    li_s2_inv: [Fp256<FrParameters>; 6],
-) -> Fp256<FrParameters> {
+    y: Fr,
+    eval_l1: &Fr,
+    zinv: &Fr,
+    h2w3: Vec<Fr>,
+    h3w3: Vec<Fr>,
+    li_s2_inv: [Fr; 6],
+) -> Fr {
     let Proof {
         eval_a,
         eval_b,
@@ -394,7 +388,7 @@ fn calculateR2(
     } = proof;
 
     let w1 = get_omegas().w1;
-    let mut num = Fr::from_str("1").unwrap();
+    let mut num = Fr::one();
 
     let betaxi = beta.mul(xi);
 

@@ -3,8 +3,8 @@ use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
 use crate::{
-    computeFEJ, computePi, compute_lagrange, get_proof, get_pubSignals, Proof,
-    VerifierProcessedInputs,
+    compute_fej::compute_fej, compute_lagrange, compute_pi::compute_pi, get_proof, get_pubSignals,
+    vk::VerifierProcessedInputs, Proof,
 };
 use ark_bn254::{Fr, FrParameters, G1Affine, G1Projective};
 use ark_ec::{AffineCurve, ProjectiveCurve};
@@ -29,8 +29,8 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     )
     .unwrap();
 
-    let mut zh: &mut Fp256<FrParameters> = &mut Fr::zero();
-    let mut zhinv: &mut Fp256<FrParameters> = &mut Fr::zero();
+    let mut zh: &mut Fr = &mut Fr::zero();
+    let mut zhinv: &mut Fr = &mut Fr::zero();
 
     // 1. compute challenge
     let (challenges, roots) = Challenges::compute(&mut zh, &mut zhinv, vpi, pubSignalBigInt);
@@ -40,20 +40,12 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
 
     // 2. compute inversion
     // Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
-    let inv_tuple = Inversion::build(
-        challenges.y,
-        challenges.xi,
-        *zhinv,
-        roots.h0w8.to_vec(),
-        roots.h1w4.to_vec(),
-        roots.h2w3.to_vec(),
-        roots.h3w3.to_vec(),
-    );
+    let inv_tuple = Inversion::build(challenges.y, challenges.xi, *zhinv, &roots);
 
     // todo remove it into calculateInversions.
     let eval_l1 = compute_lagrange(*zh, inv_tuple.eval_l1);
 
-    let pi = computePi(pub_signal, eval_l1);
+    let pi = compute_pi(pub_signal, eval_l1);
 
     println!("Verifying proof...");
 
@@ -79,7 +71,7 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     .into_affine();
 
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
-    let points = computeFEJ(
+    let points = compute_fej(
         challenges.y,
         roots.h0w8.to_vec(),
         inv_tuple.denH1,
