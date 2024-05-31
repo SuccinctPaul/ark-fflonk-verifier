@@ -1,9 +1,11 @@
 use crate::challenge::Challenges;
-use crate::inversion::calculateInversions;
+use crate::compute_r::compute_r;
+use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
 use crate::{
-    calculateR0, calculateR1, calculateR2, computeFEJ, computePi, compute_lagrange, get_proof,
-    get_pubSignals, Proof, VerifierProcessedInputs,
+    computeFEJ, computePi, compute_lagrange,
+    compute_r::{calculateR0, calculateR1, calculateR2},
+    get_proof, get_pubSignals, Proof, VerifierProcessedInputs,
 };
 use ark_bn254::{Fr, FrParameters, G1Affine, G1Projective};
 use ark_ec::{AffineCurve, ProjectiveCurve};
@@ -16,9 +18,9 @@ use std::str::FromStr;
 /// - the provided inverse in the proof is wrong
 /// - the pair checking is wrong
 pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
-    // // NOTE: values of n larger than 186 will overflow the u128 type,
-    // // resulting in output that doesn't match fibonacci sequence.
-    // // However, the resulting proof will still be valid!
+    // NOTE: values of n larger than 186 will overflow the u128 type,
+    // resulting in output that doesn't match fibonacci sequence.
+    // However, the resulting proof will still be valid!
     println!("cycle-tracker-start: verification");
 
     // TODO: remove
@@ -38,7 +40,8 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     let zinv = zhinv.clone();
 
     // 2. compute inversion
-    let mut inv_tuple = calculateInversions(
+    // Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
+    let inv_tuple = Inversion::build(
         challenges.y,
         challenges.xi,
         *zhinv,
@@ -47,46 +50,25 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
         roots.h2w3.to_vec(),
         roots.h3w3.to_vec(),
     );
-    let mut eval_l1 = inv_tuple.0;
-    let lis_values = inv_tuple.1;
-    let denH1 = inv_tuple.2;
-    let denH2 = inv_tuple.3;
 
-    eval_l1 = compute_lagrange(*zh, eval_l1);
+    // todo remove it into calculateInversions.
+    let eval_l1 = compute_lagrange(*zh, inv_tuple.eval_l1);
 
     let pi = computePi(pub_signal, eval_l1);
 
     println!("Verifying proof...");
 
     // Computes r1(y) and r2(y)
-    let R0 = calculateR0(
-        challenges.xi,
-        proof.clone(),
-        challenges.y,
-        roots.h0w8.to_vec(),
-        lis_values.li_s0_inv,
+    let (R0, R1, R2) = compute_r(
+        &proof,
+        &challenges,
+        &roots,
+        &inv_tuple,
+        &pi,
+        &zinv,
+        &eval_l1,
     );
-    let R1 = calculateR1(
-        challenges.xi,
-        proof.clone(),
-        challenges.y,
-        pi,
-        roots.h1w4.to_vec(),
-        lis_values.li_s1_inv,
-        zinv,
-    );
-    let R2 = calculateR2(
-        challenges.xi,
-        challenges.gamma,
-        challenges.beta,
-        proof.clone(),
-        challenges.y,
-        eval_l1,
-        zinv,
-        roots.h2w3.to_vec(),
-        roots.h3w3.to_vec(),
-        lis_values.li_s2_inv,
-    );
+
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
     let g1_x = <G1Affine as AffineCurve>::BaseField::from_str("1").unwrap();
     let g1_y = <G1Affine as AffineCurve>::BaseField::from_str("2").unwrap();
@@ -97,11 +79,12 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
     )
     .into_affine();
 
+    // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
     let points = computeFEJ(
         challenges.y,
         roots.h0w8.to_vec(),
-        denH1,
-        denH2,
+        inv_tuple.denH1,
+        inv_tuple.denH2,
         challenges.alpha,
         proof.clone(),
         g1_affine,
@@ -110,6 +93,7 @@ pub fn verifier(mut vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) 
         R2,
     );
 
+    // Validate all evaluations
     check_pairing(proof, points, challenges);
 
     println!("cycle-tracker-end: verification");
