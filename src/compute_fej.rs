@@ -15,15 +15,11 @@ pub fn compute_fej(
     denH2: Fr,
     alpha: Fr,
     proof: &Proof,
-    g1: GroupAffine<Parameters>,
+    g1: G1Affine,
     R0: Fr,
     R1: Fr,
     R2: Fr,
-) -> (
-    GroupAffine<Parameters>,
-    GroupAffine<Parameters>,
-    GroupAffine<Parameters>,
-) {
+) -> (G1Affine, G1Affine, G1Affine) {
     let mut numerator = y.sub(h0w8[0]);
     numerator = numerator.mul(y.sub(h0w8[1]));
     numerator = numerator.mul(y.sub(h0w8[2]));

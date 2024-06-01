@@ -1,4 +1,5 @@
 use crate::challenge::Challenges;
+use crate::dummy::G1Affine;
 use crate::Proof;
 use ark_bn254::g1::Parameters;
 use ark_bn254::{Bn254, Fq, Fq2, G2Affine};
@@ -10,11 +11,7 @@ use std::str::FromStr;
 pub fn check_pairing(
     proof: &Proof,
 
-    points: (
-        GroupAffine<Parameters>,
-        GroupAffine<Parameters>,
-        GroupAffine<Parameters>,
-    ),
+    points: (G1Affine, G1Affine, G1Affine),
     challenges: Challenges,
 ) {
     let F = points.0;
