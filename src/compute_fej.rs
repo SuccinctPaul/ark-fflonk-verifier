@@ -44,48 +44,16 @@ pub fn compute_fej(
             .unwrap();
 
     let c0_affine = G1Projective::new(c0_x, c0_y, Fq::one()).into_affine();
-    // pf -> c0x
-    // pf + 32 -> c0y
-    // pf, pc1, quotient1
-
-    // min -> c1x
-    // min + 32 -> c1y
-    // min + 64 -> quotient1
-
-    // multiply c1 * quotient1
-
-    // min + 64 -> c0x
-    // min + 96 -> c0y
-
-    // adding points c1 * quotient1 + c0
-
-    // print!("Quotient 1: {:?}", quotient1.to_string());
-    // print!("Quotient 2: {:?}", quotient2.to_string());
 
     let c1_agg = c0_affine.add(c1.mul(quotient1).into_affine());
-
-    let c2_agg = c1_agg.add(c2.mul(quotient2).into_affine()); //  F point
-                                                              // println!("c2_agg: {:?}", c2_agg.x.to_string());
-                                                              // println!("c2_agg: {:?}", c2_agg.y.to_string());
+    //  F point
+    let c2_agg = c1_agg.add(c2.mul(quotient2).into_affine());
 
     let r_agg = R0.add(quotient1.mul(R1).add(quotient2.mul(R2)));
+    // E point
+    let g1_acc = g1.mul(r_agg).into_affine();
+    // J Point
+    let w1_agg = w1.mul(numerator).into_affine();
 
-    let g1_acc = g1.mul(r_agg).into_affine(); // E point
-                                              // println!("g1_acc: {:?}", g1_acc.x.to_string());
-                                              // println!("g1_acc: {:?}", g1_acc.y.to_string());
-
-    let w1_agg = w1.mul(numerator).into_affine(); // J Point
-
-    // println!("w1_agg: {:?}", w1_agg.x.to_string());
-    // println!("w1_agg: {:?}", w1_agg.y.to_string());
-    // pE, g1x, g1y, r_agg
-    // min -> g1x
-    // min + 32 -> g1y
-    // min + 64 -> r_agg
-
-    // multiply g1 * r_agg
-
-    // min + 64 -> 0
-    // min + 96 -> 0
     (c2_agg, g1_acc, w1_agg)
 }
