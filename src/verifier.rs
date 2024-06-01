@@ -3,13 +3,10 @@ use crate::compute_r::compute_r;
 use crate::dummy::precompute_c0;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
-use crate::{
-    compute_fej::compute_fej, compute_pi::compute_pi,
-    vk::VerifierProcessedInputs, Proof,
-};
+use crate::{compute_fej::compute_fej, compute_pi::compute_pi, vk::VerifierProcessedInputs, Proof};
 use num_bigint::BigInt;
 
-use ark_bn254::{Fr};
+use ark_bn254::Fr;
 
 /// Use the given verification key `vk` to verify the `proof`` against the given `pubs` public inputs.
 /// Can fail if:
@@ -65,8 +62,8 @@ pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
 
 #[cfg(test)]
 mod test {
-    use crate::{get_proof, get_pubSignals};
     use super::*;
+    use crate::{get_proof, get_pubSignals};
 
     #[test]
     fn test_fflonk_verifier() {

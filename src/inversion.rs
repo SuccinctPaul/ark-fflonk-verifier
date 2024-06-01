@@ -1,6 +1,6 @@
 use crate::challenge::Roots;
 use crate::{get_domain_size, get_omegas, get_proof};
-use ark_bn254::{Fr};
+use ark_bn254::Fr;
 use ark_ff::{One, Zero};
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;

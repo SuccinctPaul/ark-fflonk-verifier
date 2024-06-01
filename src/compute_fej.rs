@@ -1,7 +1,7 @@
 use crate::Proof;
-use ark_bn254::{Fr, G1Affine, G1Projective};
+use ark_bn254::{Fq, Fr, G1Affine, G1Projective};
 use ark_ec::{AffineCurve, ProjectiveCurve};
-use ark_ff::{One};
+use ark_ff::One;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
@@ -34,22 +34,16 @@ pub fn compute_fej(
     let quotient1 = alpha.mul(numerator.mul(denH1));
     let quotient2 = alpha.mul(alpha.mul(numerator.mul(denH2)));
 
-    let c0_x = <G1Affine as AffineCurve>::BaseField::from_str(
+    let c0_x = Fq::from_str(
         "7005013949998269612234996630658580519456097203281734268590713858661772481668",
     )
     .unwrap();
 
-    let c0_y = <G1Affine as AffineCurve>::BaseField::from_str(
-        "869093939501355406318588453775243436758538662501260653214950591532352435323",
-    )
-    .unwrap();
+    let c0_y =
+        Fq::from_str("869093939501355406318588453775243436758538662501260653214950591532352435323")
+            .unwrap();
 
-    let c0_affine = G1Projective::new(
-        c0_x,
-        c0_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let c0_affine = G1Projective::new(c0_x, c0_y, Fq::one()).into_affine();
     // pf -> c0x
     // pf + 32 -> c0y
     // pf, pc1, quotient1

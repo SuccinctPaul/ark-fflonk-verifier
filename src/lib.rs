@@ -14,12 +14,9 @@ pub use crate::dummy::{
     get_domain_size, get_omegas, get_proof, get_pubSignals, padd_bytes32, Omegas, Proof,
 };
 
-use ark_bn254::{
-    Fr,
-};
+use ark_bn254::Fr;
 use ark_ec::*;
-use std::ops::{Mul};
-
+use std::ops::Mul;
 
 pub fn compute_lagrange(zh: Fr, eval_l1: Fr) -> Fr {
     // let w = Fr::one();

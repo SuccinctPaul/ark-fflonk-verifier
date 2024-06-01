@@ -1,7 +1,7 @@
 use crate::challenge::{Challenges, Roots};
 use crate::inversion::Inversion;
 use crate::{get_omegas, Proof};
-use ark_bn254::{Fr};
+use ark_bn254::Fr;
 use ark_ff::{Field, One, Zero};
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;

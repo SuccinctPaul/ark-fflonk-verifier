@@ -1,5 +1,5 @@
-use ark_bn254::{Fr};
-use ark_ff::{Zero};
+use ark_bn254::Fr;
+use ark_ff::Zero;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 

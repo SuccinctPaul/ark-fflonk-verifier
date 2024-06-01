@@ -1,23 +1,16 @@
-use ark_bn254::{Bn254, Fr, G1Projective};
+use ark_bn254::{Bn254, Fq, Fr, G1Affine, G1Projective};
 use ark_ec::*;
-use ark_ff::{One};
+use ark_ff::One;
 use num_bigint::*;
-use std::fmt::{Debug};
+use std::fmt::Debug;
 use std::str::FromStr;
 
-pub type G1Affine = <Bn254 as PairingEngine>::G1Affine;
-pub type G2Point = <Bn254 as PairingEngine>::G2Affine;
 // Proof calldata
 
 pub fn precompute_c0() -> G1Affine {
-    let g1_x = <ark_bn254::G1Affine as AffineCurve>::BaseField::from_str("1").unwrap();
-    let g1_y = <ark_bn254::G1Affine as AffineCurve>::BaseField::from_str("2").unwrap();
-    let g1_affine = G1Projective::new(
-        g1_x,
-        g1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let g1_x = Fq::from_str("1").unwrap();
+    let g1_y = Fq::from_str("2").unwrap();
+    let g1_affine = G1Projective::new(g1_x, g1_y, Fq::one()).into_affine();
 
     g1_affine
 }
@@ -98,41 +91,21 @@ pub struct Omegas {
 }
 
 pub fn construct_proof(proof_values: Vec<&str>, pub_signal: Fr) -> ProofWithPubSignal {
-    let c1_x = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[0]).unwrap();
-    let c1_y = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[1]).unwrap();
-    let c1_affine = G1Projective::new(
-        c1_x,
-        c1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let c1_x = Fq::from_str(proof_values[0]).unwrap();
+    let c1_y = Fq::from_str(proof_values[1]).unwrap();
+    let c1_affine = G1Projective::new(c1_x, c1_y, Fq::one()).into_affine();
 
-    let c2_x = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[2]).unwrap();
-    let c2_y = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[3]).unwrap();
-    let c2_affine = G1Projective::new(
-        c2_x,
-        c2_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let c2_x = Fq::from_str(proof_values[2]).unwrap();
+    let c2_y = Fq::from_str(proof_values[3]).unwrap();
+    let c2_affine = G1Projective::new(c2_x, c2_y, Fq::one()).into_affine();
 
-    let w1_x = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[4]).unwrap();
-    let w1_y = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[5]).unwrap();
-    let w1_affine = G1Projective::new(
-        w1_x,
-        w1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let w1_x = Fq::from_str(proof_values[4]).unwrap();
+    let w1_y = Fq::from_str(proof_values[5]).unwrap();
+    let w1_affine = G1Projective::new(w1_x, w1_y, Fq::one()).into_affine();
 
-    let w2_x = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[6]).unwrap();
-    let w2_y = <G1Affine as AffineCurve>::BaseField::from_str(proof_values[7]).unwrap();
-    let w2_affine = G1Projective::new(
-        w2_x,
-        w2_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let w2_x = Fq::from_str(proof_values[6]).unwrap();
+    let w2_y = Fq::from_str(proof_values[7]).unwrap();
+    let w2_affine = G1Projective::new(w2_x, w2_y, Fq::one()).into_affine();
 
     let proof = Proof {
         c1: c1_affine,
@@ -195,41 +168,21 @@ pub fn get_proof() -> Proof {
     //   println!(" \"{},\" ", val);
     // }
 
-    let c1_x = <G1Affine as AffineCurve>::BaseField::from_str(pr[0]).unwrap();
-    let c1_y = <G1Affine as AffineCurve>::BaseField::from_str(pr[1]).unwrap();
-    let c1_affine = G1Projective::new(
-        c1_x,
-        c1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let c1_x = Fq::from_str(pr[0]).unwrap();
+    let c1_y = Fq::from_str(pr[1]).unwrap();
+    let c1_affine = G1Projective::new(c1_x, c1_y, Fq::one()).into_affine();
 
-    let c2_x = <G1Affine as AffineCurve>::BaseField::from_str(pr[2]).unwrap();
-    let c2_y = <G1Affine as AffineCurve>::BaseField::from_str(pr[3]).unwrap();
-    let c2_affine = G1Projective::new(
-        c2_x,
-        c2_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let c2_x = Fq::from_str(pr[2]).unwrap();
+    let c2_y = Fq::from_str(pr[3]).unwrap();
+    let c2_affine = G1Projective::new(c2_x, c2_y, Fq::one()).into_affine();
 
-    let w1_x = <G1Affine as AffineCurve>::BaseField::from_str(pr[4]).unwrap();
-    let w1_y = <G1Affine as AffineCurve>::BaseField::from_str(pr[5]).unwrap();
-    let w1_affine = G1Projective::new(
-        w1_x,
-        w1_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let w1_x = Fq::from_str(pr[4]).unwrap();
+    let w1_y = Fq::from_str(pr[5]).unwrap();
+    let w1_affine = G1Projective::new(w1_x, w1_y, Fq::one()).into_affine();
 
-    let w2_x = <G1Affine as AffineCurve>::BaseField::from_str(pr[6]).unwrap();
-    let w2_y = <G1Affine as AffineCurve>::BaseField::from_str(pr[7]).unwrap();
-    let w2_affine = G1Projective::new(
-        w2_x,
-        w2_y,
-        <G1Projective as ProjectiveCurve>::BaseField::one(),
-    )
-    .into_affine();
+    let w2_x = Fq::from_str(pr[6]).unwrap();
+    let w2_y = Fq::from_str(pr[7]).unwrap();
+    let w2_affine = G1Projective::new(w2_x, w2_y, Fq::one()).into_affine();
 
     Proof {
         c1: c1_affine,
