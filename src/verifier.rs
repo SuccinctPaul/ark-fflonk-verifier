@@ -60,7 +60,7 @@ pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
     );
 
     // 6. Validate all evaluations
-    check_pairing(proof, points, challenges);
+    check_pairing(&proof, points, challenges);
 
     println!("cycle-tracker-end: verification");
 }
