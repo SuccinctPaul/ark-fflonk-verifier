@@ -1,9 +1,7 @@
 use crate::challenge::Challenges;
 use crate::dummy::G1Affine;
 use crate::Proof;
-use ark_bn254::g1::Parameters;
 use ark_bn254::{Bn254, Fq, Fq2, G2Affine};
-use ark_ec::short_weierstrass_jacobian::GroupAffine;
 use ark_ec::{AffineCurve, PairingEngine, ProjectiveCurve};
 use std::ops::Add;
 use std::str::FromStr;

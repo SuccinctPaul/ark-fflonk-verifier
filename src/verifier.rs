@@ -4,14 +4,12 @@ use crate::dummy::precompute_c0;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
 use crate::{
-    compute_fej::compute_fej, compute_lagrange, compute_pi::compute_pi, get_proof, get_pubSignals,
+    compute_fej::compute_fej, compute_pi::compute_pi,
     vk::VerifierProcessedInputs, Proof,
 };
-use ark_bn254::{Fr, FrParameters, G1Affine, G1Projective};
-use ark_ec::{AffineCurve, ProjectiveCurve};
-use ark_ff::{Fp256, One, Zero};
 use num_bigint::BigInt;
-use std::str::FromStr;
+
+use ark_bn254::{Fr};
 
 /// Use the given verification key `vk` to verify the `proof`` against the given `pubs` public inputs.
 /// Can fail if:
@@ -67,6 +65,7 @@ pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
 
 #[cfg(test)]
 mod test {
+    use crate::{get_proof, get_pubSignals};
     use super::*;
 
     #[test]
@@ -75,7 +74,7 @@ mod test {
         let proof = get_proof();
         let pub_signal = get_pubSignals();
 
-        let mut vpi = VerifierProcessedInputs {
+        let vpi = VerifierProcessedInputs {
             c0x: BigInt::parse_bytes(
                 b"7005013949998269612234996630658580519456097203281734268590713858661772481668",
                 10,

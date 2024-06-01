@@ -1,9 +1,9 @@
 use crate::challenge::{Challenges, Roots};
 use crate::inversion::Inversion;
 use crate::{get_omegas, Proof};
-use ark_bn254::{Fr, FrParameters};
-use ark_ff::{Field, Fp256, One, Zero};
-use std::ops::{Add, Mul, Neg, Sub};
+use ark_bn254::{Fr};
+use ark_ff::{Field, One, Zero};
+use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
 pub fn compute_r(
@@ -323,7 +323,7 @@ fn calculateR1(
 
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_0.mul(eval_b));
-    let mut square = H1w4_0.mul(H1w4_0);
+    let square = H1w4_0.mul(H1w4_0);
     c1Value = c1Value.add(eval_c.mul(square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_0)));
 
@@ -331,7 +331,7 @@ fn calculateR1(
 
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_1.mul(eval_b));
-    let mut square = H1w4_1.mul(H1w4_1);
+    let square = H1w4_1.mul(H1w4_1);
     c1Value = c1Value.add(eval_c.mul(square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_1)));
 
@@ -340,7 +340,7 @@ fn calculateR1(
 
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_2.mul(eval_b));
-    let mut square = H1w4_2.mul(H1w4_2);
+    let square = H1w4_2.mul(H1w4_2);
     c1Value = c1Value.add(eval_c.mul(square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_2)));
 
@@ -348,7 +348,7 @@ fn calculateR1(
 
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_3.mul(eval_b));
-    let mut square = H1w4_3.mul(H1w4_3);
+    let square = H1w4_3.mul(H1w4_3);
     c1Value = c1Value.add(eval_c.mul(square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_3)));
 

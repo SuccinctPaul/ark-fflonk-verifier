@@ -1,13 +1,8 @@
-use ark_bn254::{g1, g1::Parameters, Bn254, FqParameters, Fr, FrParameters, G1Projective};
-use ark_ec::short_weierstrass_jacobian::GroupAffine;
+use ark_bn254::{Bn254, Fr, G1Projective};
 use ark_ec::*;
-use ark_ff::{Field, Fp256, Fp256Parameters, One, PrimeField, UniformRand, Zero};
-use ark_poly::univariate::DensePolynomial;
-use ark_poly::{domain, Polynomial};
+use ark_ff::{One};
 use num_bigint::*;
-use std::fmt::{Debug, DebugMap, Display};
-use std::marker::PhantomData;
-use std::ops::{Add, Mul, Neg, Sub};
+use std::fmt::{Debug};
 use std::str::FromStr;
 
 pub type G1Affine = <Bn254 as PairingEngine>::G1Affine;

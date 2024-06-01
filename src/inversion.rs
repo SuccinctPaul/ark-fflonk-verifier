@@ -1,7 +1,7 @@
 use crate::challenge::Roots;
 use crate::{get_domain_size, get_omegas, get_proof};
-use ark_bn254::{Fr, FrParameters};
-use ark_ff::{Fp256, One, Zero};
+use ark_bn254::{Fr};
+use ark_ff::{One, Zero};
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
@@ -53,13 +53,13 @@ impl Inversion {
 
         let denH2 = w.clone();
 
-        let mut li_s0_inv = Self::computeLiS0(y, &roots.h0w8);
+        let li_s0_inv = Self::computeLiS0(y, &roots.h0w8);
 
-        let mut li_s1_inv = Self::computeLiS1(y, &roots.h1w4);
+        let li_s1_inv = Self::computeLiS1(y, &roots.h1w4);
 
-        let mut li_s2_inv = Self::computeLiS2(y, xi, &roots.h2w3, &roots.h3w3);
+        let li_s2_inv = Self::computeLiS2(y, xi, &roots.h2w3, &roots.h3w3);
 
-        let mut w = Fr::one();
+        let w = Fr::one();
 
         let mut eval_l1 = get_domain_size().mul(xi.sub(w));
 
@@ -110,7 +110,7 @@ impl Inversion {
         .unwrap();
 
         for i in 0..8 {
-            let coeff = ((i * 7) % 8);
+            let coeff = (i * 7) % 8;
             den2 = h0w8[0 + coeff];
             // println!("den2: {}", den2);
             den3 = y.add(q.sub(h0w8[0 + (i)]));
@@ -144,7 +144,7 @@ impl Inversion {
         let mut li_s1_inv: [Fr; 4] = [Fr::zero(); 4];
 
         for i in 0..4 {
-            let coeff = ((i * 3) % 4);
+            let coeff = (i * 3) % 4;
             den2 = h1w4[0 + coeff];
             den3 = y.add(q.sub(h1w4[0 + (i)]));
             li_s1_inv[i] = den1.mul(den2).mul(den3);
@@ -171,7 +171,7 @@ impl Inversion {
         let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
 
         for i in 0..3 {
-            let coeff = ((i * 2) % 3);
+            let coeff = (i * 2) % 3;
             den2 = h2w3[0 + coeff];
             den3 = y.add(q.sub(h2w3[0 + (i)]));
             li_s2_inv[i] = den1.mul(den2).mul(den3);
@@ -180,7 +180,7 @@ impl Inversion {
         den1 = (Fr::from_str("3").unwrap().mul(h3w3[0])).mul(xi.mul(omegas.w1).add(q.sub(xi)));
 
         for i in 0..3 {
-            let coeff = ((i * 2) % 3);
+            let coeff = (i * 2) % 3;
             den2 = h3w3[0 + coeff];
             den3 = y.add(q.sub(h3w3[0 + (i)]));
             li_s2_inv[i + 3] = den1.mul(den2).mul(den3);

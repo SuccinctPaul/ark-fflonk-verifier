@@ -1,11 +1,11 @@
 use crate::dummy::get_proog_bigint;
 use crate::{get_omegas, padd_bytes32, vk::VerifierProcessedInputs};
-use ark_bn254::{Fr, FrParameters};
-use ark_ff::{Field, Fp256, One, Zero};
+use ark_bn254::{Fr};
+use ark_ff::{Field, One};
 use num_bigint::{BigInt, BigUint};
 
 use num_traits::FromPrimitive;
-use std::ops::{Mul, Sub};
+use std::ops::{Mul};
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
 
@@ -77,7 +77,7 @@ impl Challenges {
         let xi_seed = keccak_hash(concatenated);
 
         // 4.xi_seed_2
-        let mut xi_seed_2 = xi_seed.mul(xi_seed);
+        let xi_seed_2 = xi_seed.mul(xi_seed);
 
         // 5. roots h0w8
         let xi_seed_3 = xi_seed * xi_seed_2;

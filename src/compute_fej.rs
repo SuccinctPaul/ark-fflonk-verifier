@@ -1,9 +1,7 @@
 use crate::Proof;
-use ark_bn254::g1::Parameters;
-use ark_bn254::{Fr, FrParameters, G1Affine, G1Projective};
-use ark_ec::short_weierstrass_jacobian::GroupAffine;
+use ark_bn254::{Fr, G1Affine, G1Projective};
 use ark_ec::{AffineCurve, ProjectiveCurve};
-use ark_ff::{Fp256, One};
+use ark_ff::{One};
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
@@ -33,8 +31,8 @@ pub fn compute_fej(
     let c2 = proof.c2;
     let w1 = proof.w1;
 
-    let mut quotient1 = alpha.mul(numerator.mul(denH1));
-    let mut quotient2 = alpha.mul(alpha.mul(numerator.mul(denH2)));
+    let quotient1 = alpha.mul(numerator.mul(denH1));
+    let quotient2 = alpha.mul(alpha.mul(numerator.mul(denH2)));
 
     let c0_x = <G1Affine as AffineCurve>::BaseField::from_str(
         "7005013949998269612234996630658580519456097203281734268590713858661772481668",
