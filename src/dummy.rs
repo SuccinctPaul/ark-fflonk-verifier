@@ -412,3 +412,18 @@ pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
     padding.append(&mut result);
     padding
 }
+
+#[cfg(test)]
+mod test{
+    use super::*;
+
+    #[test]
+    fn test_parsing_str_to_fr(){
+        let f = get_pubSignals();
+
+        println!("raw str: 14516932981781041565586298118536599721399535462624815668597272732223874827152");
+        println!("{:?}", f);
+        println!("{:?}", f.to_string());
+
+    }
+}
