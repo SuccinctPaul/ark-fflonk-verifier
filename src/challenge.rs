@@ -1,4 +1,4 @@
-use crate::dummy::get_proog_bigint;
+use crate::proof::get_proog_bigint;
 use crate::{get_omegas, padd_bytes32, vk::VerifierProcessedInputs};
 use ark_bn254::Fr;
 use ark_ff::{Field, One};

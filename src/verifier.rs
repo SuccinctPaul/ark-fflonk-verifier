@@ -1,8 +1,8 @@
 use crate::challenge::Challenges;
 use crate::compute_r::compute_r;
-use crate::dummy::precompute_c0;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
+use crate::proof::precompute_c0;
 use crate::{compute_fej::compute_fej, compute_pi::compute_pi, vk::VerifierProcessedInputs, Proof};
 use num_bigint::BigInt;
 

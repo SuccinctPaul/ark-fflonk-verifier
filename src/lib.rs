@@ -7,10 +7,11 @@ mod compute_r;
 mod dummy;
 mod inversion;
 mod pairing;
+mod proof;
 mod verifier;
 mod vk;
 
-pub use crate::dummy::{
+pub use crate::proof::{
     get_domain_size, get_omegas, get_proof, get_pubSignals, padd_bytes32, Omegas, Proof,
 };
 
