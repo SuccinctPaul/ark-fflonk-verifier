@@ -1,5 +1,6 @@
 use num_bigint::BigInt;
 
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct VerifierProcessedInputs {
     pub c0x: BigInt,
     pub c0y: BigInt,

@@ -8,7 +8,7 @@ use std::str::FromStr;
 // pub type LiS0 = [Fr; 8];
 // pub type LiS1 = [Fr; 4];
 // pub type LiS2 = [Fr; 6];
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Inversion {
     pub eval_l1: Fr,
     pub lis_values: LISValues,
@@ -17,7 +17,7 @@ pub struct Inversion {
     // pub zh_inv: Fr,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct LISValues {
     pub li_s0_inv: [Fr; 8],
     pub li_s1_inv: [Fr; 4],
