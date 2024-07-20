@@ -1,18 +1,17 @@
 //! A simple program to be proven inside the zkVM.
 
-mod challenge;
-mod compute_fej;
-mod compute_pi;
-mod compute_r;
-mod dummy;
-mod inversion;
-mod pairing;
-mod verifier;
-mod vk;
+pub mod challenge;
+pub mod compute_fej;
+pub mod compute_pi;
+pub mod compute_r;
+pub mod inversion;
+pub mod pairing;
+pub mod proof;
+pub mod test;
+pub mod verifier;
+pub mod vk;
 
-pub use crate::dummy::{
-    get_domain_size, get_omegas, get_proof, get_pubSignals, padd_bytes32, Omegas, Proof,
-};
+pub use crate::proof::{get_domain_size, get_omegas, get_pubSignals, padd_bytes32, Omegas, Proof};
 
 use ark_bn254::Fr;
 use ark_ec::*;

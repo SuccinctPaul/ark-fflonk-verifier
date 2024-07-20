@@ -1,5 +1,6 @@
 use crate::challenge::Roots;
-use crate::{get_domain_size, get_omegas, get_proof};
+use crate::test::get_dummy_proof;
+use crate::{get_domain_size, get_omegas};
 use ark_bn254::Fr;
 use ark_ff::{One, Zero};
 use std::ops::{Add, Mul, Sub};
@@ -233,7 +234,7 @@ impl Inversion {
         // println!("acc: {}", acc);
         // println!("acc wala xeval_l1: {}", eval_l1);
 
-        let mut inv = get_proof().eval_inv;
+        let mut inv = get_dummy_proof().eval_inv;
 
         // println!("inv: {}", inv);
 
