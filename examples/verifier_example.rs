@@ -1,4 +1,4 @@
-use ark_fflonk_verifier::verifier::verifier;
+use ark_fflonk_verifier::verifier::{fflonk_verifier, verifier};
 
 use ark_fflonk_verifier::proof::{get_pubSignals, Proof};
 use ark_fflonk_verifier::vk::VerifierProcessedInputs;
@@ -32,5 +32,5 @@ fn main() {
     ];
     let pub_signal = get_pubSignals();
     let vpi = VerifierProcessedInputs::default();
-    verifier(vpi, Proof::construct(proof), pub_signal);
+    fflonk_verifier(vpi, Proof::construct(proof), pub_signal);
 }

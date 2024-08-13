@@ -295,7 +295,6 @@ mod test {
     use crate::{get_pubSignals, padd_bytes32};
     use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
-    use hex::ToHex;
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
 

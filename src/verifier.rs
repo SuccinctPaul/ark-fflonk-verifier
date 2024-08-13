@@ -12,21 +12,16 @@ use ark_bn254::Fr;
 /// Can fail if:
 /// - the provided inverse in the proof is wrong
 /// - the pair checking is wrong
-pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
-    println!("cycle-tracker-start: verification");
-
+pub fn fflonk_verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
     // 1. compute challenge
     let (challenges, roots) = Challenges::compute(vpi, pub_signal.clone());
-    println!("finish compute_challenge \n");
+
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let inv_tuple = Inversion::build(challenges.y, challenges.xi, challenges.zh, &roots);
-    println!("finish compute inversion \n");
 
     // 3. compute pi
     let pi = compute_pi(pub_signal, inv_tuple.eval_l1);
-
-    println!("Verifying proof...");
 
     // 4. Computes r1(y) and r2(y)
     let (R0, R1, R2) = compute_r(
@@ -38,10 +33,7 @@ pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
         &challenges.zh,
         &inv_tuple.eval_l1,
     );
-    println!("finish compute r \n");
     // 5. compute fej
-    // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
-
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
     let points = compute_fej(
         challenges.y,
@@ -55,10 +47,7 @@ pub fn verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
         R1,
         R2,
     );
-    println!("finish compute fej \n");
 
     // 6. Validate all evaluations
     check_pairing(&proof, points, challenges);
-
-    println!("cycle-tracker-end: verification");
 }
