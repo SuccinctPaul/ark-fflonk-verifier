@@ -1,8 +1,9 @@
 use crate::challenge::Challenges;
 use crate::Proof;
-use ark_bn254::{Bn254, Fq, Fq2, G1Affine, G2Affine};
+use ark_bn254::{Bn254, Fq, Fq2, G1Affine, G2Affine, G2Projective};
 use ark_ec::pairing::Pairing;
-use ark_ec::CurveGroup;
+use ark_ec::{AffineRepr, CurveGroup};
+use num_traits::One;
 use std::ops::{Add, Mul};
 use std::str::FromStr;
 
@@ -37,8 +38,9 @@ pub fn check_pairing(
     )
     .unwrap();
 
+    println!("debug: second pairing value");
     // second pairing value
-    let g2_val = G2Affine::new(Fq2::new(g2x1, g2x2), Fq2::new(g2y1, g2y2));
+    let g2_val = G2Affine::generator();
 
     // third pairing value
     let p3 = -W2;
@@ -63,6 +65,7 @@ pub fn check_pairing(
 
     println!("Doing Pairing Check!");
     let x2_val = G2Affine::new(Fq2::new(x2x1, x2x2), Fq2::new(x2y1, x2y2));
+    println!("");
     let pairing1 = Bn254::pairing(p1, g2_val);
     let pairing2 = Bn254::pairing(p3, x2_val);
 
