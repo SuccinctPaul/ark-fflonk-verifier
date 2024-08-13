@@ -15,3 +15,6 @@ ark-bn254 = { version = "0.4.0", features = ["curve"] }
 tiny-keccak = { version = "2.0", features = ["sha3","keccak"] }
 num-bigint = "0.4.4"
 num-traits = "0.2.18"
+
+hex = "0.4.3"
+hex-literal = "0.4.1"
