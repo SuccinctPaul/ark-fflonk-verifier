@@ -1,0 +1,13 @@
+[package]
+name = "ark-fflonk-verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ark-bn254 = "0.3.0"
+ark-ec = "0.3.0"
+ark-ff = "0.3.0"
+ark-poly = "0.3.0"
+tiny-keccak = { version = "2.0", features = ["sha3","keccak"] }
+num-bigint = "0.4.4"
+num-traits = "0.2.18"
