@@ -1,24 +1,23 @@
 use crate::challenge::{Challenges, Roots};
 use crate::inversion::Inversion;
-use crate::{get_omegas, Proof};
+use crate::proof::Proof;
+use crate::vk::VerificationKey;
 use ark_bn254::Fr;
 use ark_ff::{Field, One, Zero};
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
 pub fn compute_r(
+    vk: &VerificationKey,
     proof: &Proof,
     challenges: &Challenges,
     roots: &Roots,
     inversion: &Inversion,
     pi: &Fr,
-    zinv: &Fr,
-    eval_l1: &Fr,
 ) -> (Fr, Fr, Fr) {
     let R0 = calculateR0(
-        challenges.xi,
         &proof,
-        challenges.y,
+        challenges,
         roots.h0w8.to_vec(),
         inversion.lis_values.li_s0_inv,
     );
@@ -29,16 +28,17 @@ pub fn compute_r(
         pi,
         roots.h1w4.to_vec(),
         inversion.lis_values.li_s1_inv,
-        zinv,
+        &challenges.zh,
     );
     let R2 = calculateR2(
+        vk,
         challenges.xi,
         challenges.gamma,
         challenges.beta,
         proof,
         challenges.y,
-        eval_l1,
-        zinv,
+        &inversion.eval_l1,
+        &challenges.zh,
         roots.h2w3.to_vec(),
         roots.h3w3.to_vec(),
         inversion.lis_values.li_s2_inv,
@@ -51,7 +51,7 @@ pub fn compute_r(
 /// where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
 /// and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
 /// and computing C0(xi)
-fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) -> Fr {
+fn calculateR0(proof: &Proof, challenges: &Challenges, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) -> Fr {
     let Proof {
         eval_ql,
         eval_qr,
@@ -64,10 +64,8 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
         ..
     } = proof;
 
-    let mut num = Fr::one();
-    let y__8 = y.pow([8]);
-    num = num.mul(y__8);
-    num = num.add(-xi);
+    // compute num
+    let num = challenges.y.pow([8]) - challenges.xi;
 
     let mut h0w80 = h0w8[0];
     let pH0w8_1_term = h0w8[1];
@@ -87,7 +85,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     let pLiS0Inv_192_term = li_s0_inv[6];
     let pLiS0Inv_224_term = li_s0_inv[7];
 
-    let mut c0Value = eval_ql.add(&h0w80.mul(eval_qr));
+    let mut c0Value = proof.eval_ql + h0w8[0] * proof.eval_qr;
 
     let mut h0w8i = h0w80.mul(h0w80);
     c0Value = c0Value.add(eval_qo.mul(&h0w8i));
@@ -107,7 +105,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res = c0Value.mul(num.mul(pLiS0Inv_term));
+    let res = c0Value * num * pLiS0Inv_term;
 
     h0w80 = pH0w8_1_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -130,7 +128,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_2 = res.add(c0Value.mul(num.mul(pLiS0Inv_32_term)));
+    let res_2 = res + c0Value * num * pLiS0Inv_32_term;
 
     h0w80 = pH0w8_2_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -153,7 +151,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_3 = res_2.add(c0Value.mul(num.mul(pLiS0Inv_64_term)));
+    let res_3 = res_2 + c0Value * num * pLiS0Inv_64_term;
 
     h0w80 = pH0w8_3_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -176,7 +174,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_4 = res_3.add(c0Value.mul(num.mul(pLiS0Inv_96_term)));
+    let res_4 = res_3 + c0Value * num * pLiS0Inv_96_term;
 
     h0w80 = pH0w8_4_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -199,7 +197,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_5 = res_4.add(c0Value.mul(num.mul(pLiS0Inv_128_term)));
+    let res_5 = res_4 + c0Value * num * pLiS0Inv_128_term;
 
     h0w80 = pH0w8_5_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -222,7 +220,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_6 = res_5.add(c0Value.mul(num.mul(pLiS0Inv_160_term)));
+    let res_6 = res_5 + c0Value * num * pLiS0Inv_160_term;
 
     h0w80 = pH0w8_6_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -245,7 +243,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_7 = res_6.add(c0Value.mul(num.mul(pLiS0Inv_192_term)));
+    let res_7 = res_6 + c0Value * num * pLiS0Inv_192_term;
 
     h0w80 = pH0w8_7_term;
     c0Value = eval_ql.add(&h0w80.mul(eval_qr));
@@ -268,7 +266,7 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     h0w8i = h0w8i.mul(h0w80);
     c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
-    let res_8 = res_7.add(c0Value.mul(num.mul(pLiS0Inv_224_term)));
+    let res_8 = res_7 + c0Value * num * pLiS0Inv_224_term;
 
     res_8
 }
@@ -362,6 +360,7 @@ fn calculateR1(
 /// and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
 /// and computing T1(xi) and T2(xi)
 fn calculateR2(
+    vk: &VerificationKey,
     xi: Fr,
     gamma: Fr,
     beta: Fr,
@@ -387,7 +386,7 @@ fn calculateR2(
         ..
     } = proof;
 
-    let w1 = get_omegas().w1;
+    let w1 = vk.omega.w1;
     let mut num = Fr::one();
 
     let betaxi = beta.mul(xi);

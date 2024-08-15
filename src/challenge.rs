@@ -1,10 +1,12 @@
-use crate::proof::get_proog_bigint;
-use crate::{get_omegas, padd_bytes32, vk::VerifierProcessedInputs};
+use crate::vk::VerificationKey;
 use ark_bn254::Fr;
-use ark_ff::{Field, One};
+use ark_ff::{BigInteger, Field, One, PrimeField};
 use num_bigint::{BigInt, BigUint};
 use std::fmt;
 
+use crate::proof::Proof;
+use crate::vk::Omega;
+use ark_ec::AffineRepr;
 use num_traits::FromPrimitive;
 use std::ops::Mul;
 use std::str::FromStr;
@@ -75,167 +77,113 @@ pub struct Challenges {
 impl Challenges {
     // compute challenge and roots:
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
-
-    pub fn compute(vpi: VerifierProcessedInputs, pub_signal: Fr) -> (Challenges, Roots) {
-        println!("pub_signal: {:?}", pub_signal.to_string());
-        println!("pub_signal: {:?}", pub_signal);
-
-        // 1.beta
-        let val1 = vpi.c0x.to_bytes_be();
-        let val2 = vpi.c0y.to_bytes_be();
-        let pub_sig_biguint: BigUint = pub_signal.into();
-        let val3 = pub_sig_biguint.to_bytes_be();
-        let val4 = get_proog_bigint().c1.0.to_bytes_be();
-        let val5 = get_proog_bigint().c1.1.to_bytes_be();
-
-        let mut concatenated = Vec::new();
-        concatenated.extend_from_slice(&padd_bytes32(val1.1));
-        concatenated.extend_from_slice(&padd_bytes32(val2.1));
-        concatenated.extend_from_slice(&padd_bytes32(val3));
-        concatenated.extend_from_slice(&padd_bytes32(val4.1));
-        concatenated.extend_from_slice(&padd_bytes32(val5.1));
-
+    pub fn compute(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> (Challenges, Roots) {
+        // 1. compute beta: keccak_hash with c0, pub_input, c1
+        let concatenated = vec![
+            vk.c0.x.into_bigint().to_bytes_be(),
+            vk.c0.y.into_bigint().to_bytes_be(),
+            pub_input.into_bigint().to_bytes_be(),
+            proof.c1.x.into_bigint().to_bytes_be(),
+            proof.c1.y.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
         let beta = keccak_hash(concatenated);
 
-        // 2.gamma
-        let _beta_string = beta.to_string();
-        // let beta_string = &_beta_string[8..8 + 64];
-        let beta_string = decimal_to_hex(&_beta_string);
-        println!("_beta_string: {:}", _beta_string);
-        println!("beta_string: {:}", beta_string);
-        let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16)
-            .unwrap()
-            .to_bytes_be();
-        concatenated = Vec::new();
-        concatenated.extend_from_slice(&padd_bytes32(val6.1));
+        // 2. compute gamma: keccak_hash with beta
+        let concatenated = beta.into_bigint().to_bytes_be();
         let gamma = keccak_hash(concatenated);
 
-        // 3.xi_seed
-        let _gamma_string = gamma.to_string();
-        // let gamma_string = &_gamma_string[8..8 + 64];
-        let gamma_string = decimal_to_hex(&_gamma_string);
-        // println!("gamma_string: {:?}", gamma_string);
-        let val7 = BigInt::parse_bytes(gamma_string.as_bytes(), 16)
-            .unwrap()
-            .to_bytes_be();
-        let val8 = get_proog_bigint().c2.0.to_bytes_be();
-        let val9 = get_proog_bigint().c2.1.to_bytes_be();
-
-        let mut concatenated = Vec::new();
-        concatenated.extend_from_slice(&padd_bytes32(val7.1));
-        concatenated.extend_from_slice(&padd_bytes32(val8.1));
-        concatenated.extend_from_slice(&padd_bytes32(val9.1));
-
+        // 3. compute xi_seed: keccak_hash with gamma,c2
+        let mut concatenated = vec![
+            gamma.into_bigint().to_bytes_be(),
+            proof.c2.x.into_bigint().to_bytes_be(),
+            proof.c2.y.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
         let xi_seed = keccak_hash(concatenated);
 
-        // 4.xi_seed_2
-        let xi_seed_2 = xi_seed.mul(xi_seed);
+        // 4. compute alpha: keccak_hash with xi_seed, eval_lines
+        let mut concatenated = vec![
+            xi_seed.into_bigint().to_bytes_be(),
+            proof.eval_ql.into_bigint().to_bytes_be(),
+            proof.eval_qr.into_bigint().to_bytes_be(),
+            proof.eval_qm.into_bigint().to_bytes_be(),
+            proof.eval_qo.into_bigint().to_bytes_be(),
+            proof.eval_qc.into_bigint().to_bytes_be(),
+            proof.eval_s1.into_bigint().to_bytes_be(),
+            proof.eval_s2.into_bigint().to_bytes_be(),
+            proof.eval_s3.into_bigint().to_bytes_be(),
+            proof.eval_a.into_bigint().to_bytes_be(),
+            proof.eval_b.into_bigint().to_bytes_be(),
+            proof.eval_c.into_bigint().to_bytes_be(),
+            proof.eval_z.into_bigint().to_bytes_be(),
+            proof.eval_zw.into_bigint().to_bytes_be(),
+            proof.eval_t1w.into_bigint().to_bytes_be(),
+            proof.eval_t2w.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let alpha = keccak_hash(concatenated);
 
-        // 5. roots h0w8
+        // 5. compute y: keccak_hash with alpha, w1
+        let mut concatenated = vec![
+            alpha.into_bigint().to_bytes_be(),
+            proof.w1.x.into_bigint().to_bytes_be(),
+            proof.w1.y.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let y = keccak_hash(concatenated);
+
+        /////////////////////////////////////////////
+        //////////// Above is keccak hash
+        /////////////////////////////////////////////
+
+        // 6.xi_seed_2, xi_seed_3
+        let xi_seed_2 = xi_seed.mul(xi_seed);
         let xi_seed_3 = xi_seed * xi_seed_2;
+
+        // 7. roots h0w8
+        let omegas = &vk.omega;
         let h0w8 = [
             xi_seed_3,
-            xi_seed_3 * get_omegas().w8_1,
-            xi_seed_3 * get_omegas().w8_2,
-            xi_seed_3 * get_omegas().w8_3,
-            xi_seed_3 * get_omegas().w8_4,
-            xi_seed_3 * get_omegas().w8_5,
-            xi_seed_3 * get_omegas().w8_6,
-            xi_seed_3 * get_omegas().w8_7,
+            xi_seed_3 * omegas.w8_1,
+            xi_seed_3 * omegas.w8_2,
+            xi_seed_3 * omegas.w8_3,
+            xi_seed_3 * omegas.w8_4,
+            xi_seed_3 * omegas.w8_5,
+            xi_seed_3 * omegas.w8_6,
+            xi_seed_3 * omegas.w8_7,
         ];
 
-        // 6.roots h1w4
+        // 8.roots h1w4
         let xi_seed_6 = xi_seed_3 * xi_seed_3;
         let h1w4 = [
             xi_seed_6,
-            xi_seed_6 * get_omegas().w4,
-            xi_seed_6 * get_omegas().w4_2,
-            xi_seed_6 * get_omegas().w4_3,
+            xi_seed_6 * omegas.w4,
+            xi_seed_6 * omegas.w4_2,
+            xi_seed_6 * omegas.w4_3,
         ];
 
-        // 7.roots h2w3
+        // 9.roots h2w3
         let xi_seed_8 = xi_seed_6 * xi_seed_2;
-        let h2w3 = [
-            xi_seed_8,
-            xi_seed_8 * get_omegas().w3,
-            xi_seed_8 * get_omegas().w3_2,
-        ];
+        let h2w3 = [xi_seed_8, xi_seed_8 * omegas.w3, xi_seed_8 * omegas.w3_2];
 
-        // 8.roots h3w3
-        let h3w3_0 = xi_seed_8 * get_omegas().wr;
-        let h3w3 = [h3w3_0, h3w3_0 * get_omegas().w3, h3w3_0 * get_omegas().w3_2];
+        // 10.roots h3w3
+        let h3w3_0 = xi_seed_8 * omegas.wr;
+        let h3w3 = [h3w3_0, h3w3_0 * omegas.w3, h3w3_0 * omegas.w3_2];
 
-        // 9. Compute xi^n
-        //zh and zhInv
+        // 11. Compute xi^n
         let xi = xi_seed_8 * xi_seed_8 * xi_seed_8;
-        // TODO: does here means be k=24 ?
-        // let zh = xi.pow(precomputed.n.into_bigint()) - Fr::one();
-        let zh = xi.pow(&BigUint::from_u128(1 << 24).unwrap().to_u64_digits()) - Fr::one();
+        // 12. zh and zhInv
+        let zh = xi.pow(vk.n.into_bigint()) - Fr::one();
 
-        // 10.alpha
-        let _xi_seed_string = xi_seed.to_string();
-        // let xi_seed_string = &_xi_seed_string[8..8 + 64];
-        let xi_seed_string = decimal_to_hex(&_xi_seed_string);
-        // let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16).unwrap().to_bytes_be();
-        let val10 = BigInt::parse_bytes(xi_seed_string.to_string().as_bytes(), 16)
-            .unwrap()
-            .to_bytes_be();
-
-        let val11 = get_proog_bigint().eval_ql.to_bytes_be();
-        let val12 = get_proog_bigint().eval_qr.to_bytes_be();
-        let val13 = get_proog_bigint().eval_qm.to_bytes_be();
-        let val14 = get_proog_bigint().eval_qo.to_bytes_be();
-        let val15 = get_proog_bigint().eval_qc.to_bytes_be();
-        let val16 = get_proog_bigint().eval_s1.to_bytes_be();
-        let val17 = get_proog_bigint().eval_s2.to_bytes_be();
-        let val18 = get_proog_bigint().eval_s3.to_bytes_be();
-        let val19 = get_proog_bigint().eval_a.to_bytes_be();
-        let val20 = get_proog_bigint().eval_b.to_bytes_be();
-        let val21 = get_proog_bigint().eval_c.to_bytes_be();
-        let val22 = get_proog_bigint().eval_z.to_bytes_be();
-        let val23 = get_proog_bigint().eval_zw.to_bytes_be();
-        let val24 = get_proog_bigint().eval_t1w.to_bytes_be();
-        let val25 = get_proog_bigint().eval_t2w.to_bytes_be();
-
-        concatenated = Vec::new();
-        concatenated.extend_from_slice(&padd_bytes32(val10.1));
-        concatenated.extend_from_slice(&padd_bytes32(val11.1));
-        concatenated.extend_from_slice(&padd_bytes32(val12.1));
-        concatenated.extend_from_slice(&padd_bytes32(val13.1));
-        concatenated.extend_from_slice(&padd_bytes32(val14.1));
-        concatenated.extend_from_slice(&padd_bytes32(val15.1));
-        concatenated.extend_from_slice(&padd_bytes32(val16.1));
-        concatenated.extend_from_slice(&padd_bytes32(val17.1));
-        concatenated.extend_from_slice(&padd_bytes32(val18.1));
-        concatenated.extend_from_slice(&padd_bytes32(val19.1));
-        concatenated.extend_from_slice(&padd_bytes32(val20.1));
-        concatenated.extend_from_slice(&padd_bytes32(val21.1));
-        concatenated.extend_from_slice(&padd_bytes32(val22.1));
-        concatenated.extend_from_slice(&padd_bytes32(val23.1));
-        concatenated.extend_from_slice(&padd_bytes32(val24.1));
-        concatenated.extend_from_slice(&padd_bytes32(val25.1));
-
-        let alpha = keccak_hash(concatenated);
-
-        // 11.y
-        let _alpha_string = alpha.to_string();
-        // let alpha_string = &_alpha_string[8..8 + 64];
-        let alpha_string = decimal_to_hex(&_alpha_string);
-        let val26 = BigInt::parse_bytes(alpha_string.to_string().as_bytes(), 16)
-            .unwrap()
-            .to_bytes_be();
-        let val27 = get_proog_bigint().w1.0.to_bytes_be();
-        let val28 = get_proog_bigint().w1.1.to_bytes_be();
-
-        concatenated = Vec::new();
-        concatenated.extend_from_slice(&(val26.1));
-        concatenated.extend_from_slice(&(val27.1));
-        concatenated.extend_from_slice(&(val28.1));
-
-        println!("y_concatenated: {:?}", concatenated);
-        let y = keccak_hash(concatenated);
-
-        println!("y: {:?}", y.to_string());
         let roots = Roots {
             h0w8,
             h1w4,
@@ -283,6 +231,7 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 }
 
 // Convert decimal_str to upper_str by fmt macro.
+#[deprecated]
 pub fn decimal_to_hex(decimal_str: &str) -> String {
     let decimal_number = BigInt::from_str(decimal_str).expect("Invalid decimal string");
     format!("{:X}", decimal_number)
@@ -291,12 +240,19 @@ pub fn decimal_to_hex(decimal_str: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::vk::VerifierProcessedInputs;
-    use crate::{get_pubSignals, padd_bytes32};
+    use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
+    use crate::proof::Proof;
     use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+
+    pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
+        let mut result = input.clone();
+        let mut padding = vec![0; 32 - input.len()];
+        padding.append(&mut result);
+        padding
+    }
 
     #[test]
     fn test_keccak() {
@@ -355,11 +311,11 @@ mod test {
 
     #[test]
     fn test_compute_challenge() {
-        let pub_signal = get_pubSignals();
+        let pub_input = Fr::from_str(MOCK_PUB_INPUT).unwrap();
 
-        let vpi = VerifierProcessedInputs::default();
-
-        let (challenges, roots) = Challenges::compute(vpi, pub_signal.clone());
+        let vk = VerificationKey::default();
+        let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
+        let (challenges, roots) = Challenges::compute(&vk, &proof, &pub_input);
 
         // println!("beta.: {:?}", challenges.beta.to_string());
         println!(
