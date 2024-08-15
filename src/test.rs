@@ -37,6 +37,9 @@ mod test {
     use crate::get_pubSignals;
     use crate::test::get_dummy_proof;
     use crate::verifier::fflonk_verifier;
+    use ark_bn254::G1Affine;
+    use ark_ec::AffineRepr;
+    use num_traits::real::Real;
 
     #[test]
     fn test_fflonk_verifier() {
@@ -44,5 +47,10 @@ mod test {
         let pub_signal = get_pubSignals();
         let vpi = crate::vk::VerifierProcessedInputs::default();
         fflonk_verifier(vpi, proof, pub_signal);
+    }
+
+    #[test]
+    fn test_pairing() {
+        let p1 = G1Affine::generator() + G1Affine::zero();
     }
 }

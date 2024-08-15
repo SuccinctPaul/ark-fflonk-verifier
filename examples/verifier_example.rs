@@ -1,4 +1,4 @@
-use ark_fflonk_verifier::verifier::{fflonk_verifier, verifier};
+use ark_fflonk_verifier::verifier::fflonk_verifier;
 
 use ark_fflonk_verifier::proof::{get_pubSignals, Proof};
 use ark_fflonk_verifier::vk::VerifierProcessedInputs;
