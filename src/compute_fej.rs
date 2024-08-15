@@ -1,6 +1,6 @@
 use crate::Proof;
 use ark_bn254::{Fq, Fr, G1Affine, G1Projective};
-use ark_ec::{AffineCurve, ProjectiveCurve};
+use ark_ec::CurveGroup;
 use ark_ff::One;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
@@ -47,7 +47,7 @@ pub fn compute_fej(
 
     let c1_agg = c0_affine.add(c1.mul(quotient1).into_affine());
     //  F point
-    let c2_agg = c1_agg.add(c2.mul(quotient2).into_affine());
+    let c2_agg = c1_agg.add(c2.mul(quotient2)).into_affine();
 
     let r_agg = R0.add(quotient1.mul(R1).add(quotient2.mul(R2)));
     // E point

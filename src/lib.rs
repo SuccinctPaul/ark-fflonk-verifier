@@ -1,5 +1,3 @@
-//! A simple program to be proven inside the zkVM.
-
 pub mod challenge;
 pub mod compute_fej;
 pub mod compute_pi;

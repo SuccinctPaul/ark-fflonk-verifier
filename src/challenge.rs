@@ -77,6 +77,9 @@ impl Challenges {
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
 
     pub fn compute(vpi: VerifierProcessedInputs, pub_signal: Fr) -> (Challenges, Roots) {
+        println!("pub_signal: {:?}", pub_signal.to_string());
+        println!("pub_signal: {:?}", pub_signal);
+
         // 1.beta
         let val1 = vpi.c0x.to_bytes_be();
         let val2 = vpi.c0y.to_bytes_be();
@@ -96,7 +99,10 @@ impl Challenges {
 
         // 2.gamma
         let _beta_string = beta.to_string();
-        let beta_string = &_beta_string[8..8 + 64];
+        // let beta_string = &_beta_string[8..8 + 64];
+        let beta_string = decimal_to_hex(&_beta_string);
+        println!("_beta_string: {:}", _beta_string);
+        println!("beta_string: {:}", beta_string);
         let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16)
             .unwrap()
             .to_bytes_be();
@@ -106,7 +112,8 @@ impl Challenges {
 
         // 3.xi_seed
         let _gamma_string = gamma.to_string();
-        let gamma_string = &_gamma_string[8..8 + 64];
+        // let gamma_string = &_gamma_string[8..8 + 64];
+        let gamma_string = decimal_to_hex(&_gamma_string);
         // println!("gamma_string: {:?}", gamma_string);
         let val7 = BigInt::parse_bytes(gamma_string.as_bytes(), 16)
             .unwrap()
@@ -167,7 +174,8 @@ impl Challenges {
 
         // 10.alpha
         let _xi_seed_string = xi_seed.to_string();
-        let xi_seed_string = &_xi_seed_string[8..8 + 64];
+        // let xi_seed_string = &_xi_seed_string[8..8 + 64];
+        let xi_seed_string = decimal_to_hex(&_xi_seed_string);
         // let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16).unwrap().to_bytes_be();
         let val10 = BigInt::parse_bytes(xi_seed_string.to_string().as_bytes(), 16)
             .unwrap()
@@ -211,7 +219,8 @@ impl Challenges {
 
         // 11.y
         let _alpha_string = alpha.to_string();
-        let alpha_string = &_alpha_string[8..8 + 64];
+        // let alpha_string = &_alpha_string[8..8 + 64];
+        let alpha_string = decimal_to_hex(&_alpha_string);
         let val26 = BigInt::parse_bytes(alpha_string.to_string().as_bytes(), 16)
             .unwrap()
             .to_bytes_be();
@@ -223,6 +232,7 @@ impl Challenges {
         concatenated.extend_from_slice(&(val27.1));
         concatenated.extend_from_slice(&(val28.1));
 
+        println!("y_concatenated: {:?}", concatenated);
         let y = keccak_hash(concatenated);
 
         println!("y: {:?}", y.to_string());
@@ -272,15 +282,76 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
     res
 }
 
+// Convert decimal_str to upper_str by fmt macro.
+pub fn decimal_to_hex(decimal_str: &str) -> String {
+    let decimal_number = BigInt::from_str(decimal_str).expect("Invalid decimal string");
+    format!("{:X}", decimal_number)
+}
+
 #[cfg(test)]
 mod test {
-    use crate::challenge::Challenges;
+    use super::*;
     use crate::vk::VerifierProcessedInputs;
     use crate::{get_pubSignals, padd_bytes32};
     use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+
+    #[test]
+    fn test_keccak() {
+        let beta = Fr::from_str(
+            "14516932981781041565586298118536599721399535462624815668597272732223874827152",
+        )
+        .unwrap();
+        // _beta_string: 14516932981781041565586298118536599721399535462624815668597272732223874827152
+        let _beta_string = beta.to_string();
+
+        // _beta_string: Fp256 "(20184AFB0D281C14053177E751B3EB51201D07C072500460B4E511D80F908390)"
+        // let beta_string = &_beta_string[8..8 + 64];
+        let beta_string = decimal_to_hex(&_beta_string);
+        println!("_beta_string: {:}", _beta_string);
+        println!("beta_string: {:}", beta_string);
+
+        let pre_bytes = beta_string.trim_start_matches("0x").as_bytes();
+        println!("actual_pre_bytes: {:?}", pre_bytes);
+        let val6 = BigInt::parse_bytes(pre_bytes, 16).unwrap().to_bytes_be();
+        println!("actual_bytes: {:?}", val6);
+        let mut concatenated = Vec::new();
+        concatenated.extend_from_slice(&padd_bytes32(val6.1));
+        let actual_gamma = keccak_hash(concatenated);
+
+        println!("");
+        let expect_pre_bytes = "20184AFB0D281C14053177E751B3EB51201D07C072500460B4E511D80F908390"
+            .trim_start_matches("0x")
+            .as_bytes();
+        println!("expect_pre_bytes: {:?}", expect_pre_bytes);
+        let val6 = BigInt::parse_bytes(expect_pre_bytes, 16)
+            .unwrap()
+            .to_bytes_be();
+        println!("expect_bytes: {:?}", val6);
+
+        let mut concatenated = Vec::new();
+        concatenated.extend_from_slice(&padd_bytes32(val6.1));
+        let expect_gamma = keccak_hash(concatenated);
+        println!("expect_gamma: {:?}", expect_gamma.to_string());
+
+        assert_eq!(actual_gamma, expect_gamma);
+    }
+
+    #[test]
+    fn test_decimal_to_hex() {
+        let expect_hex_str =
+            "20184AFB0D281C14053177E751B3EB51201D07C072500460B4E511D80F908390".to_string();
+
+        let try_1_pre_bytes =
+            "14516932981781041565586298118536599721399535462624815668597272732223874827152"
+                .to_string();
+        let actual_hex_str = decimal_to_hex(&try_1_pre_bytes);
+        println!("actual_hex_str {:?}", actual_hex_str);
+
+        assert_eq!(expect_hex_str, actual_hex_str);
+    }
 
     #[test]
     fn test_compute_challenge() {
@@ -290,34 +361,43 @@ mod test {
 
         let (challenges, roots) = Challenges::compute(vpi, pub_signal.clone());
 
+        // println!("beta.: {:?}", challenges.beta.to_string());
+        println!(
+            "gamma.: {:?}",
+            decimal_to_hex(&challenges.gamma.to_string())
+        );
+        println!(
+            "xi_seed.: {:?}",
+            decimal_to_hex(&challenges.xi_seed.to_string())
+        );
+        println!(
+            "xi_seed_2.: {:?}",
+            decimal_to_hex(&challenges.xi_seed_2.to_string())
+        );
+        println!("");
+        println!("h0w8.: {:?}", decimal_to_hex(&roots.h0w8[0].to_string()));
+        println!("h1w4.: {:?}", decimal_to_hex(&roots.h1w4[0].to_string()));
+        println!("h2w3.: {:?}", decimal_to_hex(&roots.h2w3[0].to_string()));
+        println!("h3w3.: {:?}", decimal_to_hex(&roots.h3w3[0].to_string()));
+        println!("y.: {:?}", decimal_to_hex(&challenges.y.to_string()));
+        println!(
+            "alpha : {:?}",
+            decimal_to_hex(&challenges.alpha.to_string())
+        );
         // println!("challenge.: {:?}", challenges.to_string());
         // println!("");
         // println!("roots: {:?}", roots.to_string());
 
-        // let alpha = Fr::from_str("103021D2C4DFFB3F63489C89C0E19CBD349A4B3257B751B780D5C97DB715AE58").unwrap();
-        // println!("alpha: {}", alpha.to_string());
-        // let expect_challenge = Challenges{
-        //     alpha: Fr::from_str("103021D2C4DFFB3F63489C89C0E19CBD349A4B3257B751B780D5C97DB715AE58").unwrap(),
-        //     beta: Fr::from_str("013AA98A5AFBBF2285C69039D7DD67BF087D1132DB842E41AF4E084141611093").unwrap(),
-        //     gamma: Fr::from_str("0F61D905AA7AB6431ED37538CE6EBBD8A9BC0ADC26B2E79334897832D4ED7A61").unwrap(),
-        //     y: Fr::from_str("1CF470047F945B3D32D9181356C6EDAD2FE9D793B43067E662DFC394A89052CF").unwrap(),
-        //     xi_seed: Fr::from_str("11754717ACAD945191E1FF79806878BC9FD858505FDEC854A5A86F5560A9BF60").unwrap(),
-        //     xi_seed_2: Fr::from_str("1437DB2A37E3708C066629D9DACF66EFC8F8910EFFAE13703769EA717AAB39C0").unwrap(),
-        //     xi: Fr::from_str("16FA559297E6D34B35D901E00A2738B590D3FA0021DE44EC7A5BE1128990CF9A").unwrap(),
-        //     zh: Fr::from_str("1327378F00ACD53ADD567D4A3881DFC5B5BBDEB32927E5525FF6185B67335855").unwrap(),
-        // };
-        // assert_eq!(challenges, expect_challenge);
-
-        // running 1 test
-        // y: "Fp256 \"(1CF470047F945B3D32D9181356C6EDAD2FE9D793B43067E662DFC394A89052CF)\""
-        // challenge.: "alpha: \"Fp256 \\\"(103021D2C4DFFB3F63489C89C0E19CBD349A4B3257B751B780D5C97DB715AE58)\\\
-        // "\"beta: Fp256 \"(013AA98A5AFBBF2285C69039D7DD67BF087D1132DB842E41AF4E084141611093)\
-        // "gamma: Fp256 \"(0F61D905AA7AB6431ED37538CE6EBBD8A9BC0ADC26B2E79334897832D4ED7A61)\
-        // "y: Fp256 \"(1CF470047F945B3D32D9181356C6EDAD2FE9D793B43067E662DFC394A89052CF)\
-        // "xi: Fp256 \"(16FA559297E6D34B35D901E00A2738B590D3FA0021DE44EC7A5BE1128990CF9A)\"xi_seed: Fp256 \"(11754717ACAD945191E1FF79806878BC9FD858505FDEC854A5A86F5560A9BF60)\"xi_seed_2: Fp256 \"(1437DB2A37E3708C066629D9DACF66EFC8F8910EFFAE13703769EA717AAB39C0)\"zh: Fp256 \"(1327378F00ACD53ADD567D4A3881DFC5B5BBDEB32927E5525FF6185B67335855)\""
+        // gamma.: "Fp256 \"(0F61D905AA7AB6431ED37538CE6EBBD8A9BC0ADC26B2E79334897832D4ED7A61)\""
+        // xi_seed.: "Fp256 \"(11754717ACAD945191E1FF79806878BC9FD858505FDEC854A5A86F5560A9BF60)\""
+        // xi_seed_2.: "Fp256 \"(1437DB2A37E3708C066629D9DACF66EFC8F8910EFFAE13703769EA717AAB39C0)\""
         //
-        // roots: "Roots: [h0w8:[Fp256 \"(0DBEDB2934AC418D1C1C8E47DEC1A69E66A94BB554BFA6872AFC4F8CA40BAAB9)\", Fp256 \"(0E4C760B29A5E4187CE1472F33C29893F7F24D772399C13A9CD4F6E9A68CC495)\", Fp256 \"(25B6D5D784D2A55DA1C28074A7CE58F01DF79C8976D7A7A582007852E0C12688)\", Fp256 \"(2F20E9CC991338002D088E77C566314D95AC6DDE761A48428E61639700A70997)\", Fp256 \"(22A57349AC855E9C9C33B76EA2BFB1BEC18A9C9324F9CA0A18E5A6074BF45548)\", Fp256 \"(2217D867B78BBC113B6EFE874DBEBFC930419AD1561FAF56A70CFEAA49733B6C)\", Fp256 \"(0AAD789B5C5EFACC168DC541D9B2FF6D0A3C4BBF02E1C8EBC1E17D410F3ED979)\", Fp256 \"(014364A6481E68298B47B73EBC1B270F92877A6A039F284EB58091FCEF58F66A)\"], h1w4:[Fp256 \"(000B4985BCCB79153FCFC78A09DD812C8F4956133E5F9E2AB68AAADAEDB987D2)\", Fp256 \"(0D6B92FFC137B85609321C5DB809AB01585AFCCAF0164A61CE8A2CA9CEA7FF60)\", Fp256 \"(305904ED2466271478807E2C77A3D73098EA92353B59D2668D574AB90246782F)\", Fp256 \"(22F8BB731FF9E7D3AF1E2958C977AD5BCFD8EB7D89A3262F7557C8EA215800A1)\"], h2w3:[Fp256 \"(04223E9C7035F035378A054386DDEF799F5EE8291A05E59861D5A022D4F47C95)\", Fp256 \"(1C6BC919795CB7B22F90CE06E0BB83C43ABB610E96022A71CCD908C6C7A69D43)\", Fp256 \"(0FD646BCF79EF8425135726C19E7E51F4E199F10C9B1608715334CAA5364E629)\"], h3w3:[Fp256 \"(2CB4F280AE2023F789FA8CF12229D101D8DF0232D04F554DCF433A95F85C8C20)\", Fp256 \"(0B75162F52D17C750A365B2FDA8098D97CBADA4D015C58416BEFE7EF842CC9C8)\", Fp256 \"(289E9435C1719FE6DC6FA34C065846DEFACDF41121C733934C90C8A26376AA1A)\"] ]"
-        // test challenge::test::test_compute_challenge ... ok
+        // h0w8.: "Fp256 \"(0DBEDB2934AC418D1C1C8E47DEC1A69E66A94BB554BFA6872AFC4F8CA40BAAB9)\""
+        // h1w4.: "Fp256 \"(000B4985BCCB79153FCFC78A09DD812C8F4956133E5F9E2AB68AAADAEDB987D2)\""
+        // h2w3.: "Fp256 \"(04223E9C7035F035378A054386DDEF799F5EE8291A05E59861D5A022D4F47C95)\""
+        // h3w3.: "Fp256 \"(2CB4F280AE2023F789FA8CF12229D101D8DF0232D04F554DCF433A95F85C8C20)\""
+        // y.: "Fp256 \"(1CF470047F945B3D32D9181356C6EDAD2FE9D793B43067E662DFC394A89052CF)\""
+        // alpha : "Fp256 \"(103021D2C4DFFB3F63489C89C0E19CBD349A4B3257B751B780D5C97DB715AE58)\""
     }
 
     #[test]
@@ -352,9 +432,9 @@ mod test {
         .unwrap();
         // dones't work
         let actual_bytes = pub_sig.0.to_bytes_be();
-        println!("actual_bytes: {:?}", actual_bytes);
+        println!("fr actual_bytes: {:?}", actual_bytes);
         let actual = padd_bytes32(actual_bytes);
-        println!("actual: {:?}", actual);
+        println!("fr actual_padd_bytes: {:?}", actual);
 
         println!("");
         let sig_biguint: BigUint = pub_sig.into();

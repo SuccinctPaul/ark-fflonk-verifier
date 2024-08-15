@@ -1,4 +1,3 @@
-use crate::verifier::verifier;
 use crate::Proof;
 
 // this method is not used since we are fetching proof from polygon zkevm
@@ -37,14 +36,21 @@ mod test {
     use super::*;
     use crate::get_pubSignals;
     use crate::test::get_dummy_proof;
+    use crate::verifier::fflonk_verifier;
+    use ark_bn254::G1Affine;
+    use ark_ec::AffineRepr;
+    use num_traits::real::Real;
 
     #[test]
     fn test_fflonk_verifier() {
-        println!("cycle-tracker-start: loading");
         let proof = get_dummy_proof();
         let pub_signal = get_pubSignals();
         let vpi = crate::vk::VerifierProcessedInputs::default();
-        println!("cycle-tracker-end: loading");
-        verifier(vpi, proof, pub_signal);
+        fflonk_verifier(vpi, proof, pub_signal);
+    }
+
+    #[test]
+    fn test_pairing() {
+        let p1 = G1Affine::generator() + G1Affine::zero();
     }
 }

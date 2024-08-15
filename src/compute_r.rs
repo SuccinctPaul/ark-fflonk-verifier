@@ -87,186 +87,186 @@ fn calculateR0(xi: Fr, proof: &Proof, y: Fr, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) 
     let pLiS0Inv_192_term = li_s0_inv[6];
     let pLiS0Inv_224_term = li_s0_inv[7];
 
-    let mut c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    let mut c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     let mut h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res = c0Value.mul(num.mul(pLiS0Inv_term));
 
     h0w80 = pH0w8_1_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_2 = res.add(c0Value.mul(num.mul(pLiS0Inv_32_term)));
 
     h0w80 = pH0w8_2_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_3 = res_2.add(c0Value.mul(num.mul(pLiS0Inv_64_term)));
 
     h0w80 = pH0w8_3_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_4 = res_3.add(c0Value.mul(num.mul(pLiS0Inv_96_term)));
 
     h0w80 = pH0w8_4_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_5 = res_4.add(c0Value.mul(num.mul(pLiS0Inv_128_term)));
 
     h0w80 = pH0w8_5_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_6 = res_5.add(c0Value.mul(num.mul(pLiS0Inv_160_term)));
 
     h0w80 = pH0w8_6_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_7 = res_6.add(c0Value.mul(num.mul(pLiS0Inv_192_term)));
 
     h0w80 = pH0w8_7_term;
-    c0Value = eval_ql.add(h0w80.mul(eval_qr));
+    c0Value = eval_ql.add(&h0w80.mul(eval_qr));
 
     h0w8i = h0w80.mul(h0w80);
-    c0Value = c0Value.add(eval_qo.mul(h0w8i));
+    c0Value = c0Value.add(eval_qo.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qm.mul(h0w8i));
+    c0Value = c0Value.add(eval_qm.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_qc.mul(h0w8i));
+    c0Value = c0Value.add(eval_qc.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s1.mul(h0w8i));
+    c0Value = c0Value.add(eval_s1.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s2.mul(h0w8i));
+    c0Value = c0Value.add(eval_s2.mul(&h0w8i));
 
     h0w8i = h0w8i.mul(h0w80);
-    c0Value = c0Value.add(eval_s3.mul(h0w8i));
+    c0Value = c0Value.add(eval_s3.mul(&h0w8i));
 
     let res_8 = res_7.add(c0Value.mul(num.mul(pLiS0Inv_224_term)));
 
@@ -315,7 +315,7 @@ fn calculateR1(
 
     let mut t0 = eval_ql.mul(eval_a);
     t0 = t0.add(eval_qr.mul(eval_b));
-    t0 = t0.add(eval_qm.mul(eval_a.mul(eval_b)));
+    t0 = t0.add(eval_qm.mul(&eval_a.mul(eval_b)));
     t0 = t0.add(eval_qo.mul(eval_c));
     t0 = t0.add(eval_qc);
     t0 = t0.add(pi);
@@ -324,7 +324,7 @@ fn calculateR1(
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_0.mul(eval_b));
     let square = H1w4_0.mul(H1w4_0);
-    c1Value = c1Value.add(eval_c.mul(square));
+    c1Value = c1Value.add(eval_c.mul(&square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_0)));
 
     let res_1 = c1Value.mul(num.mul(pLiS1Inv_0_term));
@@ -332,7 +332,7 @@ fn calculateR1(
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_1.mul(eval_b));
     let square = H1w4_1.mul(H1w4_1);
-    c1Value = c1Value.add(eval_c.mul(square));
+    c1Value = c1Value.add(eval_c.mul(&square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_1)));
 
     let res_2 = res_1.add(c1Value.mul(num.mul(pLiS1Inv_32_term)));
@@ -341,7 +341,7 @@ fn calculateR1(
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_2.mul(eval_b));
     let square = H1w4_2.mul(H1w4_2);
-    c1Value = c1Value.add(eval_c.mul(square));
+    c1Value = c1Value.add(eval_c.mul(&square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_2)));
 
     let res_3 = res_2.add(c1Value.mul(num.mul(pLiS1Inv_64_term)));
@@ -349,7 +349,7 @@ fn calculateR1(
     let mut c1Value = *eval_a;
     c1Value = c1Value.add(H1w4_3.mul(eval_b));
     let square = H1w4_3.mul(H1w4_3);
-    c1Value = c1Value.add(eval_c.mul(square));
+    c1Value = c1Value.add(eval_c.mul(&square));
     c1Value = c1Value.add(t0.mul(square.mul(H1w4_3)));
 
     let res_4 = res_3.add(c1Value.mul(num.mul(pLiS1Inv_96_term)));
@@ -422,52 +422,52 @@ fn calculateR2(
     num2 = xi.mul(xi.mul(w1));
     num = num.add(num2);
 
-    let mut t2 = eval_a.add(betaxi.add(gamma));
-    t2 = t2.mul(eval_b.add(gamma.add(betaxi.mul(k1))));
-    t2 = t2.mul(eval_c.add(gamma.add(betaxi.mul(k2))));
+    let mut t2 = eval_a.add(&betaxi.add(gamma));
+    t2 = t2.mul(eval_b.add(&gamma.add(betaxi.mul(k1))));
+    t2 = t2.mul(eval_c.add(&gamma.add(betaxi.mul(k2))));
     t2 = t2.mul(eval_z);
 
-    let mut t1 = eval_a.add(gamma.add(beta.mul(eval_s1)));
-    t1 = t1.mul(eval_b.add(gamma.add(beta.mul(eval_s2))));
-    t1 = t1.mul(eval_c.add(gamma.add(beta.mul(eval_s3))));
+    let mut t1 = eval_a.add(&gamma.add(beta.mul(eval_s1)));
+    t1 = t1.mul(eval_b.add(&gamma.add(beta.mul(eval_s2))));
+    t1 = t1.mul(eval_c.add(&gamma.add(beta.mul(eval_s3))));
     t1 = t1.mul(eval_zw);
 
     t2 = t2.sub(t1);
     t2 = t2.mul(zinv);
 
-    t1 = eval_z.sub(Fr::one());
+    t1 = eval_z.sub(&Fr::one());
     t1 = t1.mul(eval_l1);
     t1 = t1.mul(zinv);
 
     let mut gamma_r2 = Fr::zero();
     let mut hw = h2w3_0;
-    let mut c2Value = eval_z.add(hw.mul(t1));
+    let mut c2Value = eval_z.add(&hw.mul(t1));
     c2Value = c2Value.add(t2.mul(hw.mul(hw)));
     gamma_r2 = gamma_r2.add(c2Value.mul(num.mul(pLiS2Inv_0_term)));
 
     hw = h2w3_1;
-    c2Value = eval_z.add(hw.mul(t1));
+    c2Value = eval_z.add(&hw.mul(t1));
     c2Value = c2Value.add(t2.mul(hw.mul(hw)));
     gamma_r2 = gamma_r2.add(c2Value.mul(num.mul(pLiS2Inv_32_term)));
 
     hw = h2w3_2;
-    c2Value = eval_z.add(hw.mul(t1));
+    c2Value = eval_z.add(&hw.mul(t1));
     c2Value = c2Value.add(t2.mul(hw.mul(hw)));
     gamma_r2 = gamma_r2.add(c2Value.mul(num.mul(pLiS2Inv_64_term)));
 
     hw = h3w3_0;
-    c2Value = eval_zw.add(hw.mul(eval_t1w));
-    c2Value = c2Value.add(eval_t2w.mul(hw.mul(hw)));
+    c2Value = eval_zw.add(&hw.mul(eval_t1w));
+    c2Value = c2Value.add(eval_t2w.mul(&hw.mul(hw)));
     gamma_r2 = gamma_r2.add(c2Value.mul(num.mul(pLiS2Inv_96_term)));
 
     hw = h3w3_1;
-    c2Value = eval_zw.add(hw.mul(eval_t1w));
-    c2Value = c2Value.add(eval_t2w.mul(hw.mul(hw)));
+    c2Value = eval_zw.add(&hw.mul(eval_t1w));
+    c2Value = c2Value.add(eval_t2w.mul(&hw.mul(hw)));
     gamma_r2 = gamma_r2.add(c2Value.mul(num.mul(pLiS2Inv_128_term)));
 
     hw = h3w3_2;
-    c2Value = eval_zw.add(hw.mul(eval_t1w));
-    c2Value = c2Value.add(eval_t2w.mul(hw.mul(hw)));
+    c2Value = eval_zw.add(&hw.mul(eval_t1w));
+    c2Value = c2Value.add(eval_t2w.mul(&hw.mul(hw)));
     gamma_r2 = gamma_r2.add(c2Value.mul(num.mul(pLiS2Inv_160_term)));
 
     gamma_r2
