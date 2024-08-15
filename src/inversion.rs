@@ -1,6 +1,6 @@
 use crate::challenge::Roots;
-use crate::test::get_dummy_proof;
-use crate::{get_domain_size, get_omegas};
+use crate::mock::{get_domain_size, MOCK_PROOF_DATA, MOCK_PUB_INPUT};
+use crate::{get_omegas, Proof};
 use ark_bn254::Fr;
 use ark_ff::{One, Zero};
 use std::ops::{Add, Mul, Sub};
@@ -234,7 +234,9 @@ impl Inversion {
         // println!("acc: {}", acc);
         // println!("acc wala xeval_l1: {}", eval_l1);
 
-        let mut inv = get_dummy_proof().eval_inv;
+        // TODO: pass it as param. instead of global variable.
+        let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
+        let mut inv = proof.eval_inv;
 
         // println!("inv: {}", inv);
 

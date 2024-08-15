@@ -283,8 +283,9 @@ pub fn decimal_to_hex(decimal_str: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
     use crate::vk::VerifierProcessedInputs;
-    use crate::{get_pubSignals, padd_bytes32};
+    use crate::{padd_bytes32, Proof};
     use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
@@ -347,7 +348,7 @@ mod test {
 
     #[test]
     fn test_compute_challenge() {
-        let pub_signal = get_pubSignals();
+        let pub_signal = Fr::from_str(MOCK_PUB_INPUT).unwrap();
 
         let vpi = VerifierProcessedInputs::default();
 

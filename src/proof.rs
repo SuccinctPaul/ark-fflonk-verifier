@@ -330,42 +330,9 @@ pub fn get_omegas() -> Omegas {
     }
 }
 
-pub fn get_domain_size() -> Fr {
-    Fr::from_str("16777216").unwrap()
-}
-
-pub fn get_pubSignals() -> Fr {
-    Fr::from_str("14516932981781041565586298118536599721399535462624815668597272732223874827152")
-        .unwrap()
-}
-
 pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
     let mut result = input.clone();
     let mut padding = vec![0; 32 - input.len()];
     padding.append(&mut result);
     padding
-}
-
-#[cfg(test)]
-mod test {
-    use crate::challenge::Challenges;
-    use crate::test::get_dummy_proof;
-    use crate::vk::VerifierProcessedInputs;
-    use crate::{get_pubSignals, padd_bytes32};
-    use ark_bn254::Fr;
-    use ark_ff::{BigInteger, PrimeField};
-    use num_bigint::{BigInt, BigUint};
-    use std::str::FromStr;
-
-    #[test]
-    fn test_dummy_proof() {
-        let pub_signal = get_pubSignals();
-
-        let proof = get_dummy_proof();
-
-        println!("proof: {:?}", proof.eval_a.to_string());
-        println!("proof: {:?}", proof.eval_b.to_string());
-        // proof: "Fp256 \"(177D85CC56ECAAC98DC3C835668105F9FF8311A73767F7BA145D443AF8D00999)\""
-        // proof: "Fp256 \"(1BD5B487CF64D1973CDFBCF8587319D681AB87E595EF347D68067418CCA5368F)\""
-    }
 }
