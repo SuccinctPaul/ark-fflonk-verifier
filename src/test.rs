@@ -12,16 +12,12 @@ mod test {
 
     #[test]
     fn test_fflonk_verifier() {
-        let pub_signal = Fr::from_str(MOCK_PUB_INPUT).unwrap();
+        let pub_input = Fr::from_str(MOCK_PUB_INPUT).unwrap();
 
         let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
 
         let vpi = crate::vk::VerifierProcessedInputs::default();
-        fflonk_verifier(vpi, proof, pub_signal);
-    }
 
-    #[test]
-    fn test_pairing() {
-        let p1 = G1Affine::generator() + G1Affine::zero();
+        fflonk_verifier(vpi, proof, &pub_input);
     }
 }

@@ -1,6 +1,7 @@
 use crate::challenge::{Challenges, Roots};
 use crate::inversion::Inversion;
-use crate::{get_omegas, Proof};
+use crate::vk::Omegas;
+use crate::Proof;
 use ark_bn254::Fr;
 use ark_ff::{Field, One, Zero};
 use std::ops::{Add, Mul, Sub};
@@ -387,7 +388,7 @@ fn calculateR2(
         ..
     } = proof;
 
-    let w1 = get_omegas().w1;
+    let w1 = Omegas::default().w1;
     let mut num = Fr::one();
 
     let betaxi = beta.mul(xi);

@@ -67,37 +67,17 @@ pub struct Proof {
 #[derive(Debug, Clone)]
 pub struct ProofWithPubSignal {
     pub proof: Proof,
-    pub pub_signal: Fr,
-}
-
-pub struct Omegas {
-    pub w1: Fr,
-    pub wr: Fr,
-
-    pub w3: Fr,
-    pub w3_2: Fr,
-
-    pub w4: Fr,
-    pub w4_2: Fr,
-    pub w4_3: Fr,
-
-    pub w8_1: Fr,
-    pub w8_2: Fr,
-    pub w8_3: Fr,
-    pub w8_4: Fr,
-    pub w8_5: Fr,
-    pub w8_6: Fr,
-    pub w8_7: Fr,
+    pub pub_input: Fr,
 }
 
 impl Proof {
     pub fn construct_proof_with_pubsignal(
         proof_values: Vec<&str>,
-        pub_signal: Fr,
+        pub_input: Fr,
     ) -> ProofWithPubSignal {
         let proof = Proof::construct(proof_values);
 
-        ProofWithPubSignal { proof, pub_signal }
+        ProofWithPubSignal { proof, pub_input }
     }
 
     pub fn construct(proof_values: Vec<&str>) -> Proof {
@@ -270,61 +250,6 @@ pub fn get_proog_bigint() -> ProofBigInt {
         eval_inv: BigInt::parse_bytes(
             b"6378827379501409574366452872421073840754012879130221505294134572417254316105",
             10,
-        )
-        .unwrap(),
-    }
-}
-
-pub fn get_omegas() -> Omegas {
-    Omegas {
-        w1: Fr::from_str(
-            "5709868443893258075976348696661355716898495876243883251619397131511003808859",
-        )
-        .unwrap(),
-        wr: Fr::from_str(
-            "18200100796661656210024324131237448517259556535315737226009542456080026430510",
-        )
-        .unwrap(),
-
-        w3: Fr::from_str(
-            "21888242871839275217838484774961031246154997185409878258781734729429964517155",
-        )
-        .unwrap(),
-        w3_2: Fr::from_str("4407920970296243842393367215006156084916469457145843978461").unwrap(),
-
-        w4: Fr::from_str(
-            "21888242871839275217838484774961031246007050428528088939761107053157389710902",
-        )
-        .unwrap(),
-        w4_2: Fr::from_str(
-            "21888242871839275222246405745257275088548364400416034343698204186575808495616",
-        )
-        .unwrap(),
-        w4_3: Fr::from_str("4407920970296243842541313971887945403937097133418418784715").unwrap(),
-
-        w8_1: Fr::from_str(
-            "19540430494807482326159819597004422086093766032135589407132600596362845576832",
-        )
-        .unwrap(),
-        w8_2: Fr::from_str(
-            "21888242871839275217838484774961031246007050428528088939761107053157389710902",
-        )
-        .unwrap(),
-        w8_3: Fr::from_str(
-            "13274704216607947843011480449124596415239537050559949017414504948711435969894",
-        )
-        .unwrap(),
-        w8_4: Fr::from_str(
-            "21888242871839275222246405745257275088548364400416034343698204186575808495616",
-        )
-        .unwrap(),
-        w8_5: Fr::from_str(
-            "2347812377031792896086586148252853002454598368280444936565603590212962918785",
-        )
-        .unwrap(),
-        w8_6: Fr::from_str("4407920970296243842541313971887945403937097133418418784715").unwrap(),
-        w8_7: Fr::from_str(
-            "8613538655231327379234925296132678673308827349856085326283699237864372525723",
         )
         .unwrap(),
     }

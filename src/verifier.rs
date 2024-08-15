@@ -12,16 +12,16 @@ use ark_bn254::Fr;
 /// Can fail if:
 /// - the provided inverse in the proof is wrong
 /// - the pair checking is wrong
-pub fn fflonk_verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_signal: Fr) {
+pub fn fflonk_verifier(vpi: VerifierProcessedInputs, proof: Proof, pub_input: &Fr) {
     // 1. compute challenge
-    let (challenges, roots) = Challenges::compute(vpi, pub_signal.clone());
+    let (challenges, roots) = Challenges::compute(vpi, &proof, pub_input);
 
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let inv_tuple = Inversion::build(challenges.y, challenges.xi, challenges.zh, &roots);
 
     // 3. compute pi
-    let pi = compute_pi(pub_signal, inv_tuple.eval_l1);
+    let pi = compute_pi(pub_input, inv_tuple.eval_l1);
 
     // 4. Computes r1(y) and r2(y)
     let (R0, R1, R2) = compute_r(

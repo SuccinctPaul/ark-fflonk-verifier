@@ -10,4 +10,4 @@ pub mod test;
 pub mod verifier;
 pub mod vk;
 
-pub use crate::proof::{get_omegas, padd_bytes32, Omegas, Proof};
+pub use crate::proof::{padd_bytes32, Proof};

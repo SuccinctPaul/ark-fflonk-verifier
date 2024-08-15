@@ -1,6 +1,7 @@
 use crate::challenge::Roots;
 use crate::mock::{get_domain_size, MOCK_PROOF_DATA, MOCK_PUB_INPUT};
-use crate::{get_omegas, Proof};
+use crate::vk::Omegas;
+use crate::Proof;
 use ark_bn254::Fr;
 use ark_ff::{One, Zero};
 use std::ops::{Add, Mul, Sub};
@@ -162,7 +163,7 @@ impl Inversion {
         .unwrap();
 
         // let den1 := mulmod(mulmod(3,mload(add(pMem, pH2w3_0)),q), addmod(mload(add(pMem, pXi)) ,mod(sub(q, mulmod(mload(add(pMem, pXi)), w1 ,q)), q), q), q)
-        let omegas = get_omegas();
+        let omegas = Omegas::default();
         let mut den1 =
             (Fr::from_str("3").unwrap().mul(h2w3[0])).mul(xi.add(q.sub(xi.mul(omegas.w1))));
 

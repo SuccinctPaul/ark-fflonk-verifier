@@ -4,7 +4,7 @@ use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
 // Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
-pub fn compute_pi(pubSignals: Fr, eval_l1: Fr) -> Fr {
+pub fn compute_pi(pubSignals: &Fr, eval_l1: Fr) -> Fr {
     let pi = Fr::zero();
 
     let q = Fr::from_str(
