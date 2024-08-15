@@ -1,13 +1,14 @@
 use crate::challenge::{Challenges, Roots};
 use crate::inversion::Inversion;
 use crate::proof::Proof;
-use crate::vk::Omegas;
+use crate::vk::VerificationKey;
 use ark_bn254::Fr;
 use ark_ff::{Field, One, Zero};
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
 pub fn compute_r(
+    vk: &VerificationKey,
     proof: &Proof,
     challenges: &Challenges,
     roots: &Roots,
@@ -30,6 +31,7 @@ pub fn compute_r(
         &challenges.zh,
     );
     let R2 = calculateR2(
+        vk,
         challenges.xi,
         challenges.gamma,
         challenges.beta,
@@ -358,6 +360,7 @@ fn calculateR1(
 /// and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
 /// and computing T1(xi) and T2(xi)
 fn calculateR2(
+    vk: &VerificationKey,
     xi: Fr,
     gamma: Fr,
     beta: Fr,
@@ -383,7 +386,7 @@ fn calculateR2(
         ..
     } = proof;
 
-    let w1 = Omegas::default().w1;
+    let w1 = vk.omega.w1;
     let mut num = Fr::one();
 
     let betaxi = beta.mul(xi);

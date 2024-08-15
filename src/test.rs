@@ -7,6 +7,7 @@ mod test {
 
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
     use crate::verifier::fflonk_verifier;
+    use crate::vk::VerificationKey;
     use ark_bn254::{Fr, G1Affine};
     use ark_ec::AffineRepr;
 
@@ -16,8 +17,7 @@ mod test {
 
         let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
 
-        let vpi = crate::vk::VerifierProcessedInputs::default();
-
-        fflonk_verifier(vpi, proof, &pub_input);
+        let vk = VerificationKey::default();
+        fflonk_verifier(&vk, proof, &pub_input);
     }
 }

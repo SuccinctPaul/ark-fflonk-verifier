@@ -1,7 +1,6 @@
 use crate::challenge::{Challenges, Roots};
-use crate::mock::{get_domain_size, MOCK_PROOF_DATA, MOCK_PUB_INPUT};
 use crate::proof::Proof;
-use crate::vk::Omegas;
+use crate::vk::{Omega, VerificationKey};
 use ark_bn254::Fr;
 use ark_ff::{Field, One, PrimeField, Zero};
 use num_bigint::BigUint;
@@ -38,7 +37,12 @@ impl Inversion {
     //      2) Check the inverse sent by the prover it is what it should be
     //      3) Compute the others inverses using the Montgomery Batched Algorithm using the inverse sent to avoid the inversion operation it does.
 
-    pub fn build(proof: &Proof, challenges: &Challenges, roots: &Roots) -> Inversion {
+    pub fn build(
+        vk: &VerificationKey,
+        proof: &Proof,
+        challenges: &Challenges,
+        roots: &Roots,
+    ) -> Inversion {
         let (y, xi, zh) = (challenges.y, challenges.xi, challenges.zh);
 
         // 1. compute den_h1,den_h2 base
@@ -55,9 +59,9 @@ impl Inversion {
 
         let li_s1_inv = Self::computeLiS1(y, &roots.h1w4);
 
-        let li_s2_inv = Self::computeLiS2(y, xi, &roots.h2w3, &roots.h3w3);
+        let li_s2_inv = Self::computeLiS2(vk, y, xi, &roots.h2w3, &roots.h3w3);
 
-        let mut eval_l1 = get_domain_size() * (xi - Fr::one());
+        let mut eval_l1 = vk.n * (xi - Fr::one());
 
         let (lis_values, denH1, denH2) = Self::inverseArray(
             proof,
@@ -82,7 +86,7 @@ impl Inversion {
 
     pub fn computeLiS0(y: Fr, h0w8: &[Fr]) -> [Fr; 8] {
         // root0^6 * 8
-        let mut den1 = h0w8[0].pow(BigUint::from_u8(6).unwrap().to_u64_digits()) * Fr::from(8);
+        let mut den1 = h0w8[0].pow([6]) * Fr::from(8);
 
         let mut li_s0_inv: [Fr; 8] = [Fr::zero(); 8];
 
@@ -95,7 +99,7 @@ impl Inversion {
     }
 
     pub fn computeLiS1(y: Fr, h1w4: &[Fr]) -> [Fr; 4] {
-        let mut den1 = h1w4[0].pow(BigUint::from_u8(2).unwrap().to_u64_digits()) * Fr::from(4);
+        let mut den1 = h1w4[0].pow([2]) * Fr::from(4);
 
         let mut li_s1_inv: [Fr; 4] = [Fr::zero(); 4];
 
@@ -108,9 +112,8 @@ impl Inversion {
         li_s1_inv
     }
 
-    pub fn computeLiS2(y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
-        let omegas = Omegas::default();
-        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xi * omegas.w1);
+    pub fn computeLiS2(vk: &VerificationKey, y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
+        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xi * vk.omega.w1);
 
         let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
 
@@ -119,7 +122,7 @@ impl Inversion {
             li_s2_inv[i] = den1 * h2w3[0 + coeff] * (y - h2w3[0 + (i)]);
         }
 
-        let den1 = Fr::from(3) * h3w3[0] * (xi * omegas.w1 - xi);
+        let den1 = Fr::from(3) * h3w3[0] * (xi * vk.omega.w1 - xi);
         for i in 0..3 {
             let coeff = (i * 2) % 3;
             li_s2_inv[i + 3] = den1 * h3w3[0 + coeff] * (y - h3w3[0 + (i)]);

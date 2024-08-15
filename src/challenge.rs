@@ -1,11 +1,12 @@
-use crate::vk::VerifierProcessedInputs;
+use crate::vk::VerificationKey;
 use ark_bn254::Fr;
 use ark_ff::{BigInteger, Field, One, PrimeField};
 use num_bigint::{BigInt, BigUint};
 use std::fmt;
 
 use crate::proof::Proof;
-use crate::vk::Omegas;
+use crate::vk::Omega;
+use ark_ec::AffineRepr;
 use num_traits::FromPrimitive;
 use std::ops::Mul;
 use std::str::FromStr;
@@ -76,15 +77,11 @@ pub struct Challenges {
 impl Challenges {
     // compute challenge and roots:
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
-    pub fn compute(
-        vpi: VerifierProcessedInputs,
-        proof: &Proof,
-        pub_input: &Fr,
-    ) -> (Challenges, Roots) {
+    pub fn compute(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> (Challenges, Roots) {
         // 1. compute beta: keccak_hash with c0, pub_input, c1
         let concatenated = vec![
-            vpi.c0x.to_bytes_be().1,
-            vpi.c0y.to_bytes_be().1,
+            vk.c0.x.into_bigint().to_bytes_be(),
+            vk.c0.y.into_bigint().to_bytes_be(),
             pub_input.into_bigint().to_bytes_be(),
             proof.c1.x.into_bigint().to_bytes_be(),
             proof.c1.y.into_bigint().to_bytes_be(),
@@ -153,7 +150,7 @@ impl Challenges {
         let xi_seed_3 = xi_seed * xi_seed_2;
 
         // 7. roots h0w8
-        let omegas = Omegas::default();
+        let omegas = &vk.omega;
         let h0w8 = [
             xi_seed_3,
             xi_seed_3 * omegas.w8_1,
@@ -185,9 +182,7 @@ impl Challenges {
         // 11. Compute xi^n
         let xi = xi_seed_8 * xi_seed_8 * xi_seed_8;
         // 12. zh and zhInv
-        // TODO: here means be k=24. exstract power=24.
-        // let zh = xi.pow(precomputed.n.into_bigint()) - Fr::one();
-        let zh = xi.pow(&BigUint::from_u128(1 << 24).unwrap().to_u64_digits()) - Fr::one();
+        let zh = xi.pow(vk.n.into_bigint()) - Fr::one();
 
         let roots = Roots {
             h0w8,
@@ -247,7 +242,6 @@ mod test {
     use super::*;
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
     use crate::proof::Proof;
-    use crate::vk::VerifierProcessedInputs;
     use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
@@ -319,9 +313,9 @@ mod test {
     fn test_compute_challenge() {
         let pub_input = Fr::from_str(MOCK_PUB_INPUT).unwrap();
 
-        let vpi = VerifierProcessedInputs::default();
+        let vk = VerificationKey::default();
         let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
-        let (challenges, roots) = Challenges::compute(vpi, &proof, &pub_input);
+        let (challenges, roots) = Challenges::compute(&vk, &proof, &pub_input);
 
         // println!("beta.: {:?}", challenges.beta.to_string());
         println!(
