@@ -1,10 +1,10 @@
-use crate::proof::get_proog_bigint;
-use crate::{padd_bytes32, vk::VerifierProcessedInputs, Proof};
+use crate::vk::VerifierProcessedInputs;
 use ark_bn254::Fr;
 use ark_ff::{BigInteger, Field, One, PrimeField};
 use num_bigint::{BigInt, BigUint};
 use std::fmt;
 
+use crate::proof::Proof;
 use crate::vk::Omegas;
 use num_traits::FromPrimitive;
 use std::ops::Mul;
@@ -76,7 +76,6 @@ pub struct Challenges {
 impl Challenges {
     // compute challenge and roots:
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
-
     pub fn compute(
         vpi: VerifierProcessedInputs,
         proof: &Proof,
@@ -90,9 +89,9 @@ impl Challenges {
             proof.c1.x.into_bigint().to_bytes_be(),
             proof.c1.y.into_bigint().to_bytes_be(),
         ]
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>();
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
         let beta = keccak_hash(concatenated);
 
         // 2. compute gamma: keccak_hash with beta
@@ -105,9 +104,9 @@ impl Challenges {
             proof.c2.x.into_bigint().to_bytes_be(),
             proof.c2.y.into_bigint().to_bytes_be(),
         ]
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>();
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
         let xi_seed = keccak_hash(concatenated);
 
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
@@ -129,9 +128,9 @@ impl Challenges {
             proof.eval_t1w.into_bigint().to_bytes_be(),
             proof.eval_t2w.into_bigint().to_bytes_be(),
         ]
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>();
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
         let alpha = keccak_hash(concatenated);
 
         // 5. compute y: keccak_hash with alpha, w1
@@ -140,16 +139,14 @@ impl Challenges {
             proof.w1.x.into_bigint().to_bytes_be(),
             proof.w1.y.into_bigint().to_bytes_be(),
         ]
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>();
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
         let y = keccak_hash(concatenated);
-
 
         /////////////////////////////////////////////
         //////////// Above is keccak hash
         /////////////////////////////////////////////
-
 
         // 6.xi_seed_2, xi_seed_3
         let xi_seed_2 = xi_seed.mul(xi_seed);
@@ -249,19 +246,26 @@ pub fn decimal_to_hex(decimal_str: &str) -> String {
 mod test {
     use super::*;
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
+    use crate::proof::Proof;
     use crate::vk::VerifierProcessedInputs;
-    use crate::{padd_bytes32, Proof};
     use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+
+    pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
+        let mut result = input.clone();
+        let mut padding = vec![0; 32 - input.len()];
+        padding.append(&mut result);
+        padding
+    }
 
     #[test]
     fn test_keccak() {
         let beta = Fr::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-            .unwrap();
+        .unwrap();
         // _beta_string: 14516932981781041565586298118536599721399535462624815668597272732223874827152
         let _beta_string = beta.to_string();
 
@@ -364,7 +368,7 @@ mod test {
             b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
             10,
         )
-            .unwrap();
+        .unwrap();
         let bytes = pubSignalBigInt.to_bytes_be().1;
         println!("expect_bytes: {:?}", bytes);
         let expect_bigint = padd_bytes32(bytes);
@@ -375,7 +379,7 @@ mod test {
         let pubSignalBigInt = BigUint::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-            .unwrap();
+        .unwrap();
         let bytes = pubSignalBigInt.to_bytes_be();
         println!("expect_bytes: {:?}", bytes);
         let expect_biguint = padd_bytes32(bytes);
@@ -387,7 +391,7 @@ mod test {
         let pub_sig = Fr::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-            .unwrap();
+        .unwrap();
         // dones't work
         let actual_bytes = pub_sig.0.to_bytes_be();
         println!("fr actual_bytes: {:?}", actual_bytes);

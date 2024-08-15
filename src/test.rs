@@ -1,4 +1,4 @@
-use crate::Proof;
+use crate::proof::Proof;
 
 #[cfg(test)]
 mod test {

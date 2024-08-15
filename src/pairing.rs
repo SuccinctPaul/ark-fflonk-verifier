@@ -1,6 +1,6 @@
-use crate::challenge::{decimal_to_hex, Challenges};
-use crate::Proof;
-use ark_bn254::{Bn254, Fq, Fq12, Fq2, G1Affine, G2Affine, G2Projective};
+use crate::challenge::Challenges;
+use crate::proof::Proof;
+use ark_bn254::{Bn254, Fq, Fq2, G1Affine, G2Affine};
 use ark_ec::bn::{G1Prepared, G2Prepared};
 use ark_ec::pairing::Pairing;
 use ark_ec::{bn, AffineRepr, CurveGroup};
