@@ -21,28 +21,19 @@ pub fn check_pairing(
 
     // first pairing value
     let p1 = F.add(-E).add(-J).add(W2.mul(challenges.y)).into_affine();
-    output_point(p1.clone());
-    println!("p1.x: {:?}", p1.x);
-    println!("p1.y: {:?}", p1.y);
-    println!("p1: {:?}", p1);
-    // p1.x: BigInteger256([10584569519187674000, 8610978561992104508, 5476655366647144939, 635933919438646234])
-    // p1.y: BigInteger256([16115314718666400513, 13398080506121126817, 4129442988357580437, 517614468129541399])
 
     // second pairing value
-    println!("\n\n =================debug here==========");
     // let g2_val = G2Affine::generator();
     let g2x1 = Fq::from_str(
         "10857046999023057135944570762232829481370756359578518086990519993285655852781",
     )
     .unwrap();
-    println!("g2x1: {:?}", decimal_to_hex(&g2x1.to_string()));
     // g2x1: BigInteger256([10269251484633538598, 15918845024527909234, 18138289588161026783, 1825990028691918907])
     // println!("g2x1");
     let g2x2 = Fq::from_str(
         "11559732032986387107991004021392285783925812861821192530917403151452391805634",
     )
     .unwrap();
-    println!("g2x2: {:?}", decimal_to_hex(&g2x2.to_string()));
 
     let g2y1 =
         Fq::from_str("869093939501355406318588453775243436758538662501260653214950591532352435323")
@@ -52,31 +43,15 @@ pub fn check_pairing(
     )
     .unwrap();
 
-    // TODO: debug. here.
-    let g2_x = Fq2::new(g2x1, g2x2);
-    // println!("");
-    // println!("g2_x_c0: {:?}", decimal_to_hex(& g2_x.c0.to_string()));
-    // println!("g2_x_c1: {:?}", decimal_to_hex(& g2_x.c1.to_string()));
-    // println!("g2_x: {:?}", g2_x.to_string());
-    // println!(" =================debug above==========\n\n");
     // second pairing value
     let g2_val = G2Affine {
-        x: g2_x,
+        x: Fq2::new(g2x1, g2x2),
         y: Fq2::new(g2y1, g2y2),
         infinity: true,
     };
-    // println!("");
-    // println!("g2_val.x: {:?}", g2_val.x);
-    // println!("g2_val.y: {:?}", g2_val.y);
-    // println!("");
-    // println!(" =================debug above==========\n\n");
 
     // third pairing value
     let p3 = -W2;
-    println!("");
-    println!("p3.x: {:?}", p3.x.0);
-    println!("p3.y: {:?}", p3.y.0);
-    println!("");
 
     // fourth pairing value. TODO: mark
     let x2x1 = Fq::from_str(
@@ -103,66 +78,9 @@ pub fn check_pairing(
         infinity: true,
     };
 
-    // println!("\n\n==lhs:");
-    // println!("p1: x: {:?}, y:{:?}", p1.x, p1.y);
-    // println!("g2_val: {:?}", g2_val);
-    //
-    // println!("\n==rhs:");
-    // println!("p3: {:?}", p3);
-    // println!("x2_val: {:?}", x2_val);
-    println!("p1: {:?}", p1);
-    println!("p1: {:?}", p1.to_string());
-    println!("p3: {:?}", p3);
-    println!("p3: {:?}", p3.to_string());
-    println!("g2_val: {:?}", g2_val);
-    println!("g2_val: {:?}", g2_val.to_string());
-    println!("x2_val: {:?}", x2_val.to_string());
-    // let lhs = Bn254::pairing(p1, g2_val);
-    // let rhs = Bn254::pairing(p3, x2_val);
     let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p3.into()];
     let rhs: [G2Prepared<ark_bn254::Config>; 2] = [g2_val.into(), x2_val.into()];
-
     let res = Bn254::multi_pairing(lhs, rhs);
 
-    // assert_eq!( lhs.0, rhs.0);
-    // println!("\n\n\n ==============pairing");
-    // println!("{:?}", lhs.0.to_string());
-    // println!("{:?}", rhs.0.to_string());
-    // if lhs == rhs {
-    if res.0.is_one() {
-        println!("Proof Verified!");
-        // return true;
-    } else {
-        panic!("Proof verification failed!");
-    }
+    assert!(res.0.is_one(), "Proof verification failed!");
 }
-
-pub fn output_point(point: G1Affine) {
-    println!(
-        "points.2: x:{:?}, y:{:?}",
-        decimal_to_hex(&point.x.to_string()),
-        decimal_to_hex(&point.y.to_string()),
-    );
-}
-
-//
-// g2_val.x: QuadExtField { c0: Fp256(BigInteger256([10269251484633538598, 15918845024527909234, 18138289588161026783, 1825990028691918907])), c1: Fp256(BigInteger256([12660871435976991040, 6936631231174072516, 714191060563144582, 1512910971262892907])) }
-// g2_val.y: QuadExtField { c0: Fp256(BigInteger256([11794916965376424501, 11279295704354203205, 7945688752144908487, 2651588760368207651])), c1: Fp256(BigInteger256([7208393106848765678, 15877432936589245627, 6195041853444001910, 983087530859390082])) }
-//
-
-// g2_x: QuadExtField { c0: Fp256(BigInteger256([10269251484633538598, 15918845024527909234, 18138289588161026783, 1825990028691918907])), c1: Fp256(BigInteger256([12660871435976991040, 6936631231174072516, 714191060563144582, 1512910971262892907])) }
-//
-// g2_val.x: QuadExtField { c0: Fp256(BigInteger256([10269251484633538598, 15918845024527909234, 18138289588161026783, 1825990028691918907])), c1: Fp256(BigInteger256([12660871435976991040, 6936631231174072516, 714191060563144582, 1512910971262892907])) }
-// g2_val.y: QuadExtField { c0: Fp256(BigInteger256([11794916965376424501, 11279295704354203205, 7945688752144908487, 2651588760368207651])), c1: Fp256(BigInteger256([7208393106848765678, 15877432936589245627, 6195041853444001910, 983087530859390082])) }
-//
-//
-//  =================debug here==========
-//
-//  =================debug here==========
-//  =================debug here==========
-// g2x1: "Fp256 \"(1800DEEF121F1E76426A00665E5C4479674322D4F75EDADD46DEBD5CD992F6ED)\""
-// g2x2: "Fp256 \"(198E9393920D483A7260BFB731FB5D25F1AA493335A9E71297E485B7AEF312C2)\""
-// g2_x_c0: "Fp256 \"(1800DEEF121F1E76426A00665E5C4479674322D4F75EDADD46DEBD5CD992F6ED)\""
-// g2_x_c1: "Fp256 \"(198E9393920D483A7260BFB731FB5D25F1AA493335A9E71297E485B7AEF312C2)\""
-// g2_x: "QuadExtField(Fp256 \"(1800DEEF121F1E76426A00665E5C4479674322D4F75EDADD46DEBD5CD992F6ED)\" + Fp256 \"(198E9393920D483A7260BFB731FB5D25F1AA493335A9E71297E485B7AEF312C2)\" * u)"
-//  =================debug above==========

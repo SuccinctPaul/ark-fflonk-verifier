@@ -77,9 +77,6 @@ impl Challenges {
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
 
     pub fn compute(vpi: VerifierProcessedInputs, pub_signal: Fr) -> (Challenges, Roots) {
-        println!("pub_signal: {:?}", pub_signal.to_string());
-        println!("pub_signal: {:?}", pub_signal);
-
         // 1.beta
         let val1 = vpi.c0x.to_bytes_be();
         let val2 = vpi.c0y.to_bytes_be();
@@ -99,10 +96,7 @@ impl Challenges {
 
         // 2.gamma
         let _beta_string = beta.to_string();
-        // let beta_string = &_beta_string[8..8 + 64];
         let beta_string = decimal_to_hex(&_beta_string);
-        println!("_beta_string: {:}", _beta_string);
-        println!("beta_string: {:}", beta_string);
         let val6 = BigInt::parse_bytes(beta_string.trim_start_matches("0x").as_bytes(), 16)
             .unwrap()
             .to_bytes_be();
@@ -232,10 +226,8 @@ impl Challenges {
         concatenated.extend_from_slice(&(val27.1));
         concatenated.extend_from_slice(&(val28.1));
 
-        println!("y_concatenated: {:?}", concatenated);
         let y = keccak_hash(concatenated);
 
-        println!("y: {:?}", y.to_string());
         let roots = Roots {
             h0w8,
             h1w4,
