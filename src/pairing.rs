@@ -1,4 +1,5 @@
 use crate::challenge::Challenges;
+use crate::compute_fej::FEJ;
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
 use ark_bn254::{Bn254, Fq, Fq2, G1Affine, G2Affine};
@@ -9,18 +10,12 @@ use num_traits::One;
 use std::ops::{Add, Mul};
 use std::str::FromStr;
 
-pub fn check_pairing(
-    vk: &VerificationKey,
-    proof: &Proof,
-    fej: (G1Affine, G1Affine, G1Affine),
-    challenges: Challenges,
-) {
-    let (F, E, J) = (fej.0, fej.1, fej.2);
-
-    let W2 = proof.w2;
+pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: Challenges) {
+    let W2 = proof.polynomials.w2;
 
     // first pairing value
-    let p1 = F.add(-E).add(-J).add(W2.mul(challenges.y)).into_affine();
+    // let p1 = F.add(-E).add(-J).add(W2.mul(challenges.y)).into_affine();
+    let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
 
     // third pairing value
     let p3 = -W2;

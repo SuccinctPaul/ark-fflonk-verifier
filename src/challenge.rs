@@ -83,8 +83,8 @@ impl Challenges {
             vk.c0.x.into_bigint().to_bytes_be(),
             vk.c0.y.into_bigint().to_bytes_be(),
             pub_input.into_bigint().to_bytes_be(),
-            proof.c1.x.into_bigint().to_bytes_be(),
-            proof.c1.y.into_bigint().to_bytes_be(),
+            proof.polynomials.c1.x.into_bigint().to_bytes_be(),
+            proof.polynomials.c1.y.into_bigint().to_bytes_be(),
         ]
         .into_iter()
         .flatten()
@@ -98,8 +98,8 @@ impl Challenges {
         // 3. compute xi_seed: keccak_hash with gamma,c2
         let mut concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
-            proof.c2.x.into_bigint().to_bytes_be(),
-            proof.c2.y.into_bigint().to_bytes_be(),
+            proof.polynomials.c2.x.into_bigint().to_bytes_be(),
+            proof.polynomials.c2.y.into_bigint().to_bytes_be(),
         ]
         .into_iter()
         .flatten()
@@ -109,21 +109,21 @@ impl Challenges {
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
         let mut concatenated = vec![
             xi_seed.into_bigint().to_bytes_be(),
-            proof.eval_ql.into_bigint().to_bytes_be(),
-            proof.eval_qr.into_bigint().to_bytes_be(),
-            proof.eval_qm.into_bigint().to_bytes_be(),
-            proof.eval_qo.into_bigint().to_bytes_be(),
-            proof.eval_qc.into_bigint().to_bytes_be(),
-            proof.eval_s1.into_bigint().to_bytes_be(),
-            proof.eval_s2.into_bigint().to_bytes_be(),
-            proof.eval_s3.into_bigint().to_bytes_be(),
-            proof.eval_a.into_bigint().to_bytes_be(),
-            proof.eval_b.into_bigint().to_bytes_be(),
-            proof.eval_c.into_bigint().to_bytes_be(),
-            proof.eval_z.into_bigint().to_bytes_be(),
-            proof.eval_zw.into_bigint().to_bytes_be(),
-            proof.eval_t1w.into_bigint().to_bytes_be(),
-            proof.eval_t2w.into_bigint().to_bytes_be(),
+            proof.evaluations.ql.into_bigint().to_bytes_be(),
+            proof.evaluations.qr.into_bigint().to_bytes_be(),
+            proof.evaluations.qm.into_bigint().to_bytes_be(),
+            proof.evaluations.qo.into_bigint().to_bytes_be(),
+            proof.evaluations.qc.into_bigint().to_bytes_be(),
+            proof.evaluations.s1.into_bigint().to_bytes_be(),
+            proof.evaluations.s2.into_bigint().to_bytes_be(),
+            proof.evaluations.s3.into_bigint().to_bytes_be(),
+            proof.evaluations.a.into_bigint().to_bytes_be(),
+            proof.evaluations.b.into_bigint().to_bytes_be(),
+            proof.evaluations.c.into_bigint().to_bytes_be(),
+            proof.evaluations.z.into_bigint().to_bytes_be(),
+            proof.evaluations.zw.into_bigint().to_bytes_be(),
+            proof.evaluations.t1w.into_bigint().to_bytes_be(),
+            proof.evaluations.t2w.into_bigint().to_bytes_be(),
         ]
         .into_iter()
         .flatten()
@@ -133,8 +133,8 @@ impl Challenges {
         // 5. compute y: keccak_hash with alpha, w1
         let mut concatenated = vec![
             alpha.into_bigint().to_bytes_be(),
-            proof.w1.x.into_bigint().to_bytes_be(),
-            proof.w1.y.into_bigint().to_bytes_be(),
+            proof.polynomials.w1.x.into_bigint().to_bytes_be(),
+            proof.polynomials.w1.y.into_bigint().to_bytes_be(),
         ]
         .into_iter()
         .flatten()
