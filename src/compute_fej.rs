@@ -35,15 +35,15 @@ impl FEJ {
             .fold(Fr::one(), |acc, h0_w8_i| acc * (challenge.y - *h0_w8_i));
         let quotient1 = challenge.alpha * numerator * invers_tuple.denH1;
         let quotient2 = challenge.alpha * challenge.alpha * numerator * invers_tuple.denH2;
-        println!("numerator: {:?}", numerator.into_bigint().to_bytes_be());
+        // println!("numerator: {:?}", numerator.into_bigint().to_bytes_be());
         println!("quotient1: {:?}", quotient1.into_bigint().to_bytes_be());
         println!("quotient2: {:?}", quotient2.into_bigint().to_bytes_be());
-        println!(
-            "proof.poly.w1: {:?}",
-            polynomials.w1.x.into_bigint().to_bytes_be()
-        );
+        // println!(
+        //     "proof.poly.w1: {:?}",
+        //     polynomials.w1.x.into_bigint().to_bytes_be()
+        // );
         let f = polynomials.c1 * quotient1 + polynomials.c2 * quotient2 + vk.c0;
-        println!("poly.c0.x: {:?}", &vk.c0.x.into_bigint().to_bytes_be());
+        println!("vk.c0.x: {:?}", &vk.c0.x.into_bigint().to_bytes_be());
         println!(
             "poly.c1.x: {:?}",
             &polynomials.c1.x.into_bigint().to_bytes_be()
@@ -52,11 +52,11 @@ impl FEJ {
             "poly.c2.x: {:?}",
             &polynomials.c2.x.into_bigint().to_bytes_be()
         );
+        println!("fej.F: {:?}", &f.x.into_bigint().to_bytes_be());
+        println!("");
 
         let e = G1Affine::generator() * (R0 + quotient1 * R1 + quotient2 * R2);
         let j = polynomials.w1 * numerator;
-        println!("");
-        println!("fej.F: {:?}", &f.x.into_bigint().to_bytes_be());
         // println!("fej.E: {:?}", &e.x.into_bigint().to_bytes_be());
         // println!("fej.J: {:?}", &j.x.into_bigint().to_bytes_be());
 
