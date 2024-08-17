@@ -5,6 +5,7 @@ pub mod inversion;
 mod mock;
 pub mod pairing;
 pub mod proof;
+pub(crate) mod serde;
 pub mod test;
 pub mod verifier;
 pub mod vk;

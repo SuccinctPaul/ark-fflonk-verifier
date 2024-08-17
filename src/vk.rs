@@ -1,10 +1,111 @@
-use ark_bn254::{Fq, Fq2, Fr, G1Affine, G1Projective, G2Affine};
+use ark_bn254::{Fq, Fq2, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
 use ark_ec::CurveGroup;
 use ark_ff::Field;
 use num_bigint::{BigInt, BigUint};
 use num_traits::One;
-use std::env::home_dir;
 use std::str::FromStr;
+
+#[derive(PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "serde", derive(::serde::Serialize, ::serde::Deserialize))]
+pub struct SnarkjsVK {
+    // Domain size
+    pub power: u8,
+
+    // Verification Key data
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub k1: Fr,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub k2: Fr,
+
+    // OMEGAS
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub w: Fr,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub w3: Fr,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub w4: Fr,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub w8: Fr,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    pub wr: Fr,
+
+    // Verifier preprocessed input
+    // x·[1]_2
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g2", rename = "X_2"))]
+    pub x2: G2Projective,
+    // C_0(x)·[1]_1
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g1", rename = "C0"))]
+    pub c0: G1Projective,
+}
+
+impl Default for SnarkjsVK {
+    fn default() -> Self {
+        let k = 24;
+        Self {
+            power: k,
+            k1: Fr::from(2),
+            k2: Fr::from(3),
+            w: Fr::from_str(
+                "5709868443893258075976348696661355716898495876243883251619397131511003808859",
+            )
+            .unwrap(),
+            wr: Fr::from_str(
+                "18200100796661656210024324131237448517259556535315737226009542456080026430510",
+            )
+            .unwrap(),
+
+            w3: Fr::from_str(
+                "21888242871839275217838484774961031246154997185409878258781734729429964517155",
+            )
+            .unwrap(),
+
+            w4: Fr::from_str(
+                "21888242871839275217838484774961031246007050428528088939761107053157389710902",
+            )
+            .unwrap(),
+
+            w8: Fr::from_str(
+                "19540430494807482326159819597004422086093766032135589407132600596362845576832",
+            )
+            .unwrap(),
+
+            x2: {
+                let x2x1 = Fq::from_str(
+                    "21831381940315734285607113342023901060522397560371972897001948545212302161822",
+                )
+                .unwrap();
+                let x2x2 = Fq::from_str(
+                    "17231025384763736816414546592865244497437017442647097510447326538965263639101",
+                )
+                .unwrap();
+                let x2y1 = Fq::from_str(
+                    "2388026358213174446665280700919698872609886601280537296205114254867301080648",
+                )
+                .unwrap();
+                let x2y2 = Fq::from_str(
+                    "11507326595632554467052522095592665270651932854513688777769618397986436103170",
+                )
+                .unwrap();
+                G2Projective {
+                    x: Fq2::new(x2x1, x2x2),
+                    y: Fq2::new(x2y1, x2y2),
+                    z: Fq2::one(),
+                }
+            },
+            c0: {
+                let x = Fq::from_str(
+                    "7005013949998269612234996630658580519456097203281734268590713858661772481668",
+                )
+                .unwrap();
+                let y = Fq::from_str(
+                    "869093939501355406318588453775243436758538662501260653214950591532352435323",
+                )
+                .unwrap();
+                G1Projective::new(x, y, Fq::one())
+            },
+        }
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct VerificationKey {
