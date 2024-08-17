@@ -47,10 +47,10 @@ pub fn compute_r(
     (R0, R1, R2)
 }
 
-/// Compute r0(y) by interpolating the polynomial r0(X) using 8 points (x,y)
-/// where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
-/// and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
-/// and computing C0(xi)
+// Compute r0(y) by interpolating the polynomial r0(X) using 8 points (x,y)
+// where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
+// and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
+// and computing C0(xi)
 fn calculateR0(proof: &Proof, challenges: &Challenges, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) -> Fr {
     let Proof {
         eval_ql,
@@ -271,10 +271,10 @@ fn calculateR0(proof: &Proof, challenges: &Challenges, h0w8: Vec<Fr>, li_s0_inv:
     res_8
 }
 
-/// Compute r1(y) by interpolating the polynomial r1(X) using 4 points (x,y)
-/// where x = {h1, h1w4, h1w4^2, h1w4^3}
-/// and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
-/// and computing T0(xi)
+// Compute r1(y) by interpolating the polynomial r1(X) using 4 points (x,y)
+// where x = {h1, h1w4, h1w4^2, h1w4^3}
+// and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
+// and computing T0(xi)
 fn calculateR1(
     xi: Fr,
     proof: &Proof,
@@ -355,10 +355,10 @@ fn calculateR1(
     res_4
 }
 
-/// Compute r2(y) by interpolating the polynomial r2(X) using 6 points (x,y)
-/// where x = {[h2, h2w3, h2w3^2], [h3, h3w3, h3w3^2]}
-/// and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
-/// and computing T1(xi) and T2(xi)
+// Compute r2(y) by interpolating the polynomial r2(X) using 6 points (x,y)
+// where x = {[h2, h2w3, h2w3^2], [h3, h3w3, h3w3^2]}
+// and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
+// and computing T1(xi) and T2(xi)
 fn calculateR2(
     vk: &VerificationKey,
     xi: Fr,

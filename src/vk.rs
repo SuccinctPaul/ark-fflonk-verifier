@@ -1,13 +1,13 @@
 use ark_bn254::{Fq, Fq2, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
 use ark_ec::CurveGroup;
 use ark_ff::Field;
-use num_bigint::{BigInt, BigUint};
 use num_traits::One;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 #[derive(PartialEq, Eq, Debug)]
-#[cfg_attr(feature = "serde", derive(::serde::Serialize, ::serde::Deserialize))]
-pub struct SnarkjsVK {
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct SnarkJSVK {
     // Domain size
     pub power: u8,
 
@@ -38,7 +38,7 @@ pub struct SnarkjsVK {
     pub c0: G1Projective,
 }
 
-impl Default for SnarkjsVK {
+impl Default for SnarkJSVK {
     fn default() -> Self {
         let k = 24;
         Self {
@@ -179,6 +179,47 @@ impl Default for VerificationKey {
     }
 }
 
+impl From<SnarkJSVK> for VerificationKey {
+    fn from(origin: SnarkJSVK) -> Self {
+        let k = origin.power;
+
+        let omega = Omega {
+            w1: origin.w,
+            wr: origin.wr,
+            w3: origin.w3,
+            w4: origin.w4,
+            w4_2: origin.w4,
+            w8_1: origin.w8,
+            ..Default::default()
+        };
+        let precompute_omega = Omega::precompute(&omega);
+
+        VerificationKey {
+            power: k,
+            n: Fr::from(1 << k),
+            k1: origin.k1,
+            k2: origin.k2,
+            // TODO: bugfix, here shouldn't be infinity
+            x2: G2Affine {
+                x: origin.x2.x,
+                y: origin.x2.y,
+                infinity: true, // NOTE: Here must be true.
+            },
+            c0: G1Affine {
+                x: origin.c0.x,
+                y: origin.c0.y,
+                infinity: true, // NOTE: Here must be true.
+            },
+            g2: G2Affine {
+                x: ark_bn254::g2::G2_GENERATOR_X,
+                y: ark_bn254::g2::G2_GENERATOR_Y,
+                infinity: true, // NOTE: Here must be true.
+            },
+            omega: precompute_omega,
+        }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Omega {
     pub w1: Fr,
@@ -198,6 +239,39 @@ pub struct Omega {
     pub w8_5: Fr,
     pub w8_6: Fr,
     pub w8_7: Fr,
+}
+
+impl Omega {
+    pub fn precompute(origin: &Self) -> Self {
+        let w3_2 = origin.w3.pow([2]);
+
+        let w4_2 = origin.w4.pow([2]);
+        let w4_3 = w4_2 * origin.w4;
+
+        let w8_2 = origin.w8_1.pow([2]);
+        let w8_3 = w8_2 * origin.w8_1;
+        let w8_4 = w8_3 * origin.w8_1;
+        let w8_5 = w8_4 * origin.w8_1;
+        let w8_6 = w8_5 * origin.w8_1;
+        let w8_7 = w8_6 * origin.w8_1;
+
+        Self {
+            w1: origin.w1,
+            wr: origin.wr,
+            w3: origin.w3,
+            w3_2,
+            w4: origin.w4,
+            w4_2,
+            w4_3,
+            w8_1: origin.w8_1,
+            w8_2,
+            w8_3,
+            w8_4,
+            w8_5,
+            w8_6,
+            w8_7,
+        }
+    }
 }
 
 impl Default for Omega {
@@ -257,5 +331,46 @@ impl Default for Omega {
             )
             .unwrap(),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_precompute_omega() {
+        let expect = Omega::default();
+
+        let actaul = Omega::precompute(&expect);
+        assert_eq!(expect.w4, actaul.w4);
+        assert_eq!(expect.w4_2, actaul.w4_2);
+        assert_eq!(expect.w4_3, actaul.w4_3);
+        assert_eq!(expect.w3, actaul.w3);
+        assert_eq!(expect.w3_2, actaul.w3_2);
+        assert_eq!(expect.w8_1, actaul.w8_1);
+        assert_eq!(expect.w8_2, actaul.w8_2);
+        assert_eq!(expect.w8_3, actaul.w8_3);
+        assert_eq!(expect.w8_4, actaul.w8_4);
+        assert_eq!(expect.w8_5, actaul.w8_5);
+        assert_eq!(expect.w8_6, actaul.w8_6);
+        assert_eq!(expect.w8_7, actaul.w8_7);
+        assert_eq!(expect, actaul);
+    }
+
+    #[test]
+    fn test_convert_between_SnarkJSVK_and_VerificationKey() {
+        let snarkjs_vk = SnarkJSVK::default();
+        let actual: VerificationKey = snarkjs_vk.into();
+
+        let expect = VerificationKey::default();
+        assert_eq!(actual.k1, expect.k1);
+        assert_eq!(actual.k2, expect.k2);
+        assert_eq!(actual.n, expect.n);
+        assert_eq!(actual.g2, expect.g2);
+        assert_eq!(actual.k2, expect.k2);
+        assert_eq!(actual.x2, expect.x2);
+        assert_eq!(actual.omega, expect.omega);
+        assert_eq!(actual, expect);
     }
 }

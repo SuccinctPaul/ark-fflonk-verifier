@@ -1,5 +1,5 @@
 use crate::challenge::{decimal_to_hex, Challenges};
-use crate::compute_fej::compute_fej;
+use crate::compute_fej::FEJ;
 use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::check_pairing;
@@ -28,7 +28,7 @@ pub fn fflonk_verifier(vk: &VerificationKey, proof: Proof, pub_input: &Fr) {
 
     // 5. compute fej
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
-    let fej = compute_fej(
+    let fej = FEJ::compute(
         vk,
         &proof,
         &challenges,
