@@ -36,7 +36,6 @@ impl Inversion {
     //      1) Prepare all the denominators to inverse
     //      2) Check the inverse sent by the prover it is what it should be
     //      3) Compute the others inverses using the Montgomery Batched Algorithm using the inverse sent to avoid the inversion operation it does.
-
     pub fn build(
         vk: &VerificationKey,
         proof: &Proof,

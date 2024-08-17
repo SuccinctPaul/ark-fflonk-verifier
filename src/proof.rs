@@ -1,70 +1,66 @@
 use ark_bn254::{Fq, Fr, G1Projective};
 use ark_ec::*;
 use ark_ff::One;
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::str::FromStr;
 
 /// The Proof data: use the implemented conversion traits `TryFrom` to build it.
-#[derive(Debug, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(::serde::Serialize, ::serde::Deserialize))]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Proof {
     pub polynomials: Polynomials,
     pub evaluations: Evaluations,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(::serde::Serialize, ::serde::Deserialize),
-    serde(rename_all = "SCREAMING_SNAKE_CASE")
-)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 /// Proof's Polynomial.
 pub struct Polynomials {
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g1"))]
+    #[serde(with = "crate::serde::g1")]
     pub c1: G1Projective,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g1"))]
+    #[serde(with = "crate::serde::g1")]
     pub c2: G1Projective,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g1"))]
+    #[serde(with = "crate::serde::g1")]
     pub w1: G1Projective,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g1"))]
+    #[serde(with = "crate::serde::g1")]
     pub w2: G1Projective,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(::serde::Serialize, ::serde::Deserialize))]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+// #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 /// Proof's Evaluation values.
 pub struct Evaluations {
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub ql: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub qr: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub qm: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub qo: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub qc: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub s1: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub s2: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub s3: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub a: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub b: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub c: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub z: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub zw: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub t1w: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub t2w: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub inv: Fr,
 }
 impl Proof {
@@ -117,6 +113,3 @@ impl Proof {
         }
     }
 }
-
-#[cfg(test)]
-mod test {}

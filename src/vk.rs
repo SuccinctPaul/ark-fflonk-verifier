@@ -5,36 +5,35 @@ use num_traits::One;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-#[derive(PartialEq, Eq, Debug)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct SnarkJSVK {
     // Domain size
     pub power: u8,
 
     // Verification Key data
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub k1: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub k2: Fr,
 
     // OMEGAS
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub w: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub w3: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub w4: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub w8: Fr,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::fr"))]
+    #[serde(with = "crate::serde::fr")]
     pub wr: Fr,
 
     // Verifier preprocessed input
     // x·[1]_2
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g2", rename = "X_2"))]
+    #[serde(with = "crate::serde::g2", rename = "X_2")]
     pub x2: G2Projective,
     // C_0(x)·[1]_1
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::g1", rename = "C0"))]
+    #[serde(with = "crate::serde::g1", rename = "C0")]
     pub c0: G1Projective,
 }
 
