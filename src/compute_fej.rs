@@ -41,11 +41,11 @@ impl FEJ {
         let quotient2 = alpha * alpha * numerator * invers_tuple.denH2;
 
         // F point
-        let c2_agg = vk.c0 + proof.c1 * quotient1 + proof.c2 * quotient2;
+        let c2_agg = vk.c0 + proof.polynomials.c1 * quotient1 + proof.polynomials.c2 * quotient2;
         // E point
         let g1_acc = G1Affine::generator() * (R0 + quotient1 * R1 + quotient2 * R2);
         // J Point
-        let w1_agg = proof.w1 * numerator;
+        let w1_agg = proof.polynomials.w1 * numerator;
 
         Self {
             F: c2_agg.into_affine(),

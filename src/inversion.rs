@@ -177,10 +177,10 @@ impl Inversion {
 
         // TODO: pass it as param. instead of global variable.
         // let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
-        let check = acc * proof.eval_inv;
+        let check = acc * proof.evaluations.inv;
         assert_eq!(check, Fr::one());
 
-        let mut inv = proof.eval_inv;
+        let mut inv = proof.evaluations.inv;
         let mut acc = inv.clone();
 
         _acc.pop();

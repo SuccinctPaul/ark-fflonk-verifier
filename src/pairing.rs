@@ -11,7 +11,7 @@ use std::ops::{Add, Mul};
 use std::str::FromStr;
 
 pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: Challenges) {
-    let W2 = proof.w2;
+    let W2 = proof.polynomials.w2;
 
     // first pairing value
     // let p1 = F.add(-E).add(-J).add(W2.mul(challenges.y)).into_affine();
