@@ -204,11 +204,7 @@ impl From<SnarkJSVK> for VerificationKey {
                 y: origin.x2.y,
                 infinity: true, // NOTE: Here must be true.
             },
-            c0: G1Affine {
-                x: origin.c0.x,
-                y: origin.c0.y,
-                infinity: true, // NOTE: Here must be true.
-            },
+            c0: origin.c0.into_affine(),
             g2: G2Affine {
                 x: ark_bn254::g2::G2_GENERATOR_X,
                 y: ark_bn254::g2::G2_GENERATOR_Y,
