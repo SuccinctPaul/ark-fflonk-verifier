@@ -1,5 +1,5 @@
 use ark_bn254::{Fq, Fq2, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
-use ark_ec::CurveGroup;
+use ark_ec::{AffineRepr, CurveGroup};
 use ark_ff::Field;
 use num_traits::One;
 use serde::{Deserialize, Serialize};
@@ -85,11 +85,7 @@ impl Default for SnarkJSVK {
                     "11507326595632554467052522095592665270651932854513688777769618397986436103170",
                 )
                 .unwrap();
-                G2Projective {
-                    x: Fq2::new(x2x1, x2x2),
-                    y: Fq2::new(x2y1, x2y2),
-                    z: Fq2::one(),
-                }
+                G2Projective::new(Fq2::new(x2x1, x2x2), Fq2::new(x2y1, x2y2), Fq2::one())
             },
             c0: {
                 let x = Fq::from_str(
@@ -151,11 +147,7 @@ impl Default for VerificationKey {
                     "11507326595632554467052522095592665270651932854513688777769618397986436103170",
                 )
                 .unwrap();
-                G2Affine {
-                    x: Fq2::new(x2x1, x2x2),
-                    y: Fq2::new(x2y1, x2y2),
-                    infinity: true, // NOTE: Here must be true.
-                }
+                G2Affine::new(Fq2::new(x2x1, x2x2), Fq2::new(x2y1, x2y2))
             },
             c0: {
                 let x = Fq::from_str(
@@ -168,11 +160,7 @@ impl Default for VerificationKey {
                 .unwrap();
                 G1Affine::new(x, y)
             },
-            g2: G2Affine {
-                x: ark_bn254::g2::G2_GENERATOR_X,
-                y: ark_bn254::g2::G2_GENERATOR_Y,
-                infinity: true, // NOTE: Here must be true.
-            },
+            g2: G2Affine::generator(),
             omega: Omega::default(),
         }
     }
@@ -198,18 +186,9 @@ impl From<SnarkJSVK> for VerificationKey {
             n: Fr::from(1 << k),
             k1: origin.k1,
             k2: origin.k2,
-            // TODO: bugfix, here shouldn't be infinity
-            x2: G2Affine {
-                x: origin.x2.x,
-                y: origin.x2.y,
-                infinity: true, // NOTE: Here must be true.
-            },
+            x2: origin.x2.into_affine(),
             c0: origin.c0.into_affine(),
-            g2: G2Affine {
-                x: ark_bn254::g2::G2_GENERATOR_X,
-                y: ark_bn254::g2::G2_GENERATOR_Y,
-                infinity: true, // NOTE: Here must be true.
-            },
+            g2: G2Affine::generator(),
             omega: precompute_omega,
         }
     }

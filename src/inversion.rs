@@ -176,8 +176,6 @@ impl Inversion {
 
         _acc.push(acc);
 
-        // TODO: pass it as param. instead of global variable.
-        // let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
         let check = acc * proof.evaluations.inv;
         assert_eq!(check, Fr::one());
 
@@ -188,7 +186,6 @@ impl Inversion {
         inv = acc.mul(_acc.last().unwrap().clone());
         acc = acc.mul(eval_l1.clone());
         *eval_l1 = inv;
-        // println!("herer eval_l1: {}", eval_l1);
 
         for i in (0..6).rev() {
             _acc.pop();
@@ -196,7 +193,6 @@ impl Inversion {
             acc = acc.mul(local_li_s2_inv[i]);
             local_li_s2_inv[i] = inv;
         }
-        // println!("local_li_s2_inv_0: {}", local_li_s2_inv[0]);
 
         for i in (0..4).rev() {
             _acc.pop();
@@ -205,16 +201,12 @@ impl Inversion {
             local_li_s1_inv[i] = inv;
         }
 
-        // println!("local_li_s1_inv_0: {}", local_li_s1_inv[0]);
-
         for i in (0..8).rev() {
             _acc.pop();
             inv = acc.mul(_acc.last().unwrap().clone());
             acc = acc.mul(local_li_s0_inv[i]);
             local_li_s0_inv[i] = inv;
         }
-
-        // println!("local_li_s0_inv_0: {}", local_li_s0_inv[0]);
 
         _acc.pop();
         inv = acc.mul(_acc.last().unwrap().clone());
@@ -235,6 +227,5 @@ impl Inversion {
         };
 
         (lis_values, local_den_h1, local_den_h2)
-        // println!("local_zh_inv: {}", local_zh_inv);
     }
 }
