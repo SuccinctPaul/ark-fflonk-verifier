@@ -28,7 +28,7 @@ pub fn compute_r(
         pi,
         roots.h1w4.to_vec(),
         inversion.lis_values.li_s1_inv,
-        &challenges.zh,
+        &inversion.zh_inv,
     );
     let R2 = calculateR2(
         vk,
@@ -38,7 +38,7 @@ pub fn compute_r(
         proof,
         challenges.y,
         &inversion.eval_l1,
-        &challenges.zh,
+        &inversion.zh_inv,
         roots.h2w3.to_vec(),
         roots.h3w3.to_vec(),
         inversion.lis_values.li_s2_inv,
@@ -317,6 +317,7 @@ fn calculateR1(
     t0 = t0.add(qo.mul(c));
     t0 = t0.add(qc);
     t0 = t0.add(pi);
+    // TODO: here should be inverse
     t0 = t0.mul(zinv);
 
     let mut c1Value = *a;

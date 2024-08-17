@@ -17,7 +17,7 @@ pub struct Inversion {
     pub lis_values: LISValues,
     pub denH1: Fr,
     pub denH2: Fr,
-    // pub zh_inv: Fr,
+    pub zh_inv: Fr,
 }
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
@@ -80,6 +80,8 @@ impl Inversion {
             lis_values,
             denH1,
             denH2,
+
+            zh_inv: zh.inverse().unwrap(),
         }
     }
 
