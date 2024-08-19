@@ -11,36 +11,24 @@ pub fn compute_r(
     vk: &VerificationKey,
     proof: &Proof,
     challenges: &Challenges,
-    roots: &Roots,
     inversion: &Inversion,
     pi: &Fr,
 ) -> (Fr, Fr, Fr) {
-    let R0 = calculateR0(
+    let roots = &challenges.roots;
+    let R0 = calculateR0(&proof, challenges, inversion.lis_values.li_s0_inv);
+    let R1 = calculateR1(
         &proof,
         challenges,
-        roots.h0w8.to_vec(),
-        inversion.lis_values.li_s0_inv,
-    );
-    let R1 = calculateR1(
-        challenges.xi,
-        &proof,
-        challenges.y,
         pi,
-        roots.h1w4.to_vec(),
         inversion.lis_values.li_s1_inv,
         &inversion.zh_inv,
     );
     let R2 = calculateR2(
         vk,
-        challenges.xi,
-        challenges.gamma,
-        challenges.beta,
         proof,
-        challenges.y,
+        challenges,
         &inversion.eval_l1,
         &inversion.zh_inv,
-        roots.h2w3.to_vec(),
-        roots.h3w3.to_vec(),
         inversion.lis_values.li_s2_inv,
     );
 
@@ -51,7 +39,8 @@ pub fn compute_r(
 // where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
 // and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
 // and computing C0(xi)
-fn calculateR0(proof: &Proof, challenges: &Challenges, h0w8: Vec<Fr>, li_s0_inv: [Fr; 8]) -> Fr {
+fn calculateR0(proof: &Proof, challenges: &Challenges, li_s0_inv: [Fr; 8]) -> Fr {
+    let h0w8 = challenges.roots.h0w8.to_vec();
     let Evaluations {
         ql,
         qr,
@@ -276,14 +265,14 @@ fn calculateR0(proof: &Proof, challenges: &Challenges, h0w8: Vec<Fr>, li_s0_inv:
 // and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
 // and computing T0(xi)
 fn calculateR1(
-    xi: Fr,
     proof: &Proof,
-    y: Fr,
+    challenges: &Challenges,
     pi: &Fr,
-    h1w4: Vec<Fr>,
     li_s1_inv: [Fr; 4],
     zinv: &Fr,
 ) -> Fr {
+    let (xi, y, h1w4) = (challenges.xi, challenges.y, challenges.roots.h1w4.to_vec());
+
     let mut num = Fr::one();
     let Evaluations {
         a,
@@ -362,17 +351,21 @@ fn calculateR1(
 // and computing T1(xi) and T2(xi)
 fn calculateR2(
     vk: &VerificationKey,
-    xi: Fr,
-    gamma: Fr,
-    beta: Fr,
     proof: &Proof,
-    y: Fr,
+    challenges: &Challenges,
     eval_l1: &Fr,
     zinv: &Fr,
-    h2w3: Vec<Fr>,
-    h3w3: Vec<Fr>,
     li_s2_inv: [Fr; 6],
 ) -> Fr {
+    let (xi, y, gamma, beta, h2w3, h3w3) = (
+        challenges.xi,
+        challenges.y,
+        challenges.gamma,
+        challenges.beta,
+        challenges.roots.h2w3.to_vec(),
+        challenges.roots.h3w3.to_vec(),
+    );
+
     let Evaluations {
         a,
         b,

@@ -116,6 +116,7 @@ pub struct Challenges {
     pub xi_seed: Fr,
     pub xi: Fr,
     pub zh: Fr,
+    pub roots: Roots,
 }
 impl Challenges {
     // compute challenge and roots:
@@ -156,6 +157,7 @@ impl Challenges {
             xi_seed,
             xi,
             zh,
+            roots: Roots::compute(&vk, &xi_seed),
         };
         challenges
     }
@@ -345,54 +347,6 @@ mod test {
         println!("actual_hex_str {:?}", actual_hex_str);
 
         assert_eq!(expect_hex_str, actual_hex_str);
-    }
-
-    #[test]
-    fn test_compute_challenge() {
-        let pub_input = Fr::from_str(MOCK_PUB_INPUT).unwrap();
-
-        let vk = VerificationKey::default();
-        let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
-        let challenges = Challenges::compute(&vk, &proof, &pub_input);
-        let roots = Roots::compute(&vk, &challenges.xi_seed);
-
-        // println!("beta.: {:?}", challenges.beta.to_string());
-        println!(
-            "gamma.: {:?}",
-            decimal_to_hex(&challenges.gamma.to_string())
-        );
-        println!(
-            "xi_seed.: {:?}",
-            decimal_to_hex(&challenges.xi_seed.to_string())
-        );
-        // println!(
-        //     "xi_seed_2.: {:?}",
-        //     decimal_to_hex(&challenges.xi_seed_2.to_string())
-        // );
-        println!("");
-        println!("h0w8.: {:?}", decimal_to_hex(&roots.h0w8[0].to_string()));
-        println!("h1w4.: {:?}", decimal_to_hex(&roots.h1w4[0].to_string()));
-        println!("h2w3.: {:?}", decimal_to_hex(&roots.h2w3[0].to_string()));
-        println!("h3w3.: {:?}", decimal_to_hex(&roots.h3w3[0].to_string()));
-        println!("y.: {:?}", decimal_to_hex(&challenges.y.to_string()));
-        println!(
-            "alpha : {:?}",
-            decimal_to_hex(&challenges.alpha.to_string())
-        );
-        // println!("challenge.: {:?}", challenges.to_string());
-        // println!("");
-        // println!("roots: {:?}", roots.to_string());
-
-        // gamma.: "Fp256 \"(0F61D905AA7AB6431ED37538CE6EBBD8A9BC0ADC26B2E79334897832D4ED7A61)\""
-        // xi_seed.: "Fp256 \"(11754717ACAD945191E1FF79806878BC9FD858505FDEC854A5A86F5560A9BF60)\""
-        // xi_seed_2.: "Fp256 \"(1437DB2A37E3708C066629D9DACF66EFC8F8910EFFAE13703769EA717AAB39C0)\""
-        //
-        // h0w8.: "Fp256 \"(0DBEDB2934AC418D1C1C8E47DEC1A69E66A94BB554BFA6872AFC4F8CA40BAAB9)\""
-        // h1w4.: "Fp256 \"(000B4985BCCB79153FCFC78A09DD812C8F4956133E5F9E2AB68AAADAEDB987D2)\""
-        // h2w3.: "Fp256 \"(04223E9C7035F035378A054386DDEF799F5EE8291A05E59861D5A022D4F47C95)\""
-        // h3w3.: "Fp256 \"(2CB4F280AE2023F789FA8CF12229D101D8DF0232D04F554DCF433A95F85C8C20)\""
-        // y.: "Fp256 \"(1CF470047F945B3D32D9181356C6EDAD2FE9D793B43067E662DFC394A89052CF)\""
-        // alpha : "Fp256 \"(103021D2C4DFFB3F63489C89C0E19CBD349A4B3257B751B780D5C97DB715AE58)\""
     }
 
     #[test]
