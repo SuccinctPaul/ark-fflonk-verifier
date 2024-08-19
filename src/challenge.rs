@@ -90,7 +90,7 @@ impl Challenges {
         .flatten()
         .collect::<Vec<_>>();
         let beta = keccak_hash(concatenated);
-
+        println!("beta: {:?}", beta.to_string());
         // 2. compute gamma: keccak_hash with beta
         let concatenated = beta.into_bigint().to_bytes_be();
         let gamma = keccak_hash(concatenated);

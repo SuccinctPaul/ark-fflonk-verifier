@@ -114,7 +114,7 @@ impl Inversion {
     }
 
     pub fn computeLiS2(vk: &VerificationKey, y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
-        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xi * vk.omega.w1);
+        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xi * vk.omega.w);
 
         let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
 
@@ -123,7 +123,7 @@ impl Inversion {
             li_s2_inv[i] = den1 * h2w3[0 + coeff] * (y - h2w3[0 + (i)]);
         }
 
-        let den1 = Fr::from(3) * h3w3[0] * (xi * vk.omega.w1 - xi);
+        let den1 = Fr::from(3) * h3w3[0] * (xi * vk.omega.w - xi);
         for i in 0..3 {
             let coeff = (i * 2) % 3;
             li_s2_inv[i + 3] = den1 * h3w3[0 + coeff] * (y - h3w3[0 + (i)]);

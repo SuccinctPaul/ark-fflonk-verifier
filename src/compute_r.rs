@@ -387,7 +387,7 @@ fn calculateR2(
         ..
     } = &proof.evaluations;
 
-    let w1 = vk.omega.w1;
+    let w1 = vk.omega.w;
     let mut num = Fr::one();
 
     let betaxi = beta.mul(xi);
