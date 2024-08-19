@@ -1,10 +1,10 @@
 use crate::vk::VerificationKey;
-use ark_bn254::Fr;
+use ark_bn254::{Fr, G1Affine, G1Projective, G2Affine};
 use ark_ff::{BigInteger, Field, One, PrimeField};
 use num_bigint::{BigInt, BigUint};
 use std::fmt;
 
-use crate::proof::Proof;
+use crate::proof::{Evaluations, Proof};
 use crate::vk::Omega;
 use ark_ec::AffineRepr;
 use num_traits::FromPrimitive;
@@ -18,6 +18,50 @@ pub struct Roots {
     pub h1w4: [Fr; 4],
     pub h2w3: [Fr; 3],
     pub h3w3: [Fr; 3],
+}
+
+impl Roots {
+    pub fn compute(vk: &VerificationKey, xi_seed: &Fr) -> Self {
+        // compute xi_seed_2, xi_seed_3
+        let xi_seed_2 = xi_seed.mul(xi_seed);
+        let xi_seed_3 = xi_seed * &xi_seed_2;
+
+        // compute roots h0w8
+        let omegas = &vk.omega;
+        let h0w8 = [
+            xi_seed_3,
+            xi_seed_3 * omegas.w8_1,
+            xi_seed_3 * omegas.w8_2,
+            xi_seed_3 * omegas.w8_3,
+            xi_seed_3 * omegas.w8_4,
+            xi_seed_3 * omegas.w8_5,
+            xi_seed_3 * omegas.w8_6,
+            xi_seed_3 * omegas.w8_7,
+        ];
+
+        // compute roots h1w4
+        let xi_seed_6 = xi_seed_3 * xi_seed_3;
+        let h1w4 = [
+            xi_seed_6,
+            xi_seed_6 * omegas.w4,
+            xi_seed_6 * omegas.w4_2,
+            xi_seed_6 * omegas.w4_3,
+        ];
+
+        // compute roots h2w3
+        let xi_seed_8 = xi_seed_6 * xi_seed_2;
+        let h2w3 = [xi_seed_8, xi_seed_8 * omegas.w3, xi_seed_8 * omegas.w3_2];
+
+        // compute roots h3w3
+        let h3w3_0 = xi_seed_8 * omegas.wr;
+        let h3w3 = [h3w3_0, h3w3_0 * omegas.w3, h3w3_0 * omegas.w3_2];
+        Roots {
+            h0w8,
+            h1w4,
+            h2w3,
+            h3w3,
+        }
+    }
 }
 
 impl fmt::Display for Roots {
@@ -70,138 +114,132 @@ pub struct Challenges {
     pub gamma: Fr,
     pub y: Fr,
     pub xi_seed: Fr,
-    pub xi_seed_2: Fr,
     pub xi: Fr,
     pub zh: Fr,
 }
 impl Challenges {
     // compute challenge and roots:
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
-    pub fn compute(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> (Challenges, Roots) {
+    pub fn compute(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> Challenges {
         // 1. compute beta: keccak_hash with c0, pub_input, c1
-        let concatenated = vec![
-            vk.c0.x.into_bigint().to_bytes_be(),
-            vk.c0.y.into_bigint().to_bytes_be(),
-            pub_input.into_bigint().to_bytes_be(),
-            proof.polynomials.c1.x.into_bigint().to_bytes_be(),
-            proof.polynomials.c1.y.into_bigint().to_bytes_be(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
-        let beta = keccak_hash(concatenated);
-        println!("beta: {:?}", beta.to_string());
+        let beta = Self::compute_beta(&vk.c0, &proof.polynomials.c1, pub_input);
+
         // 2. compute gamma: keccak_hash with beta
-        let concatenated = beta.into_bigint().to_bytes_be();
-        let gamma = keccak_hash(concatenated);
+        let gamma = Self::compute_gamma(&beta);
 
         // 3. compute xi_seed: keccak_hash with gamma,c2
-        let mut concatenated = vec![
-            gamma.into_bigint().to_bytes_be(),
-            proof.polynomials.c2.x.into_bigint().to_bytes_be(),
-            proof.polynomials.c2.y.into_bigint().to_bytes_be(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
-        let xi_seed = keccak_hash(concatenated);
+        let xi_seed = Self::compute_xiseed(&gamma, proof.polynomials.c2);
 
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
-        let mut concatenated = vec![
-            xi_seed.into_bigint().to_bytes_be(),
-            proof.evaluations.ql.into_bigint().to_bytes_be(),
-            proof.evaluations.qr.into_bigint().to_bytes_be(),
-            proof.evaluations.qm.into_bigint().to_bytes_be(),
-            proof.evaluations.qo.into_bigint().to_bytes_be(),
-            proof.evaluations.qc.into_bigint().to_bytes_be(),
-            proof.evaluations.s1.into_bigint().to_bytes_be(),
-            proof.evaluations.s2.into_bigint().to_bytes_be(),
-            proof.evaluations.s3.into_bigint().to_bytes_be(),
-            proof.evaluations.a.into_bigint().to_bytes_be(),
-            proof.evaluations.b.into_bigint().to_bytes_be(),
-            proof.evaluations.c.into_bigint().to_bytes_be(),
-            proof.evaluations.z.into_bigint().to_bytes_be(),
-            proof.evaluations.zw.into_bigint().to_bytes_be(),
-            proof.evaluations.t1w.into_bigint().to_bytes_be(),
-            proof.evaluations.t2w.into_bigint().to_bytes_be(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
-        let alpha = keccak_hash(concatenated);
+        let alpha = Self::compute_alpha(&xi_seed, &proof.evaluations);
 
         // 5. compute y: keccak_hash with alpha, w1
-        let mut concatenated = vec![
-            alpha.into_bigint().to_bytes_be(),
-            proof.polynomials.w1.x.into_bigint().to_bytes_be(),
-            proof.polynomials.w1.y.into_bigint().to_bytes_be(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
-        let y = keccak_hash(concatenated);
+        let y = Self::compute_y(&alpha, &proof.polynomials.w1);
 
         /////////////////////////////////////////////
         //////////// Above is keccak hash
         /////////////////////////////////////////////
 
-        // 6.xi_seed_2, xi_seed_3
-        let xi_seed_2 = xi_seed.mul(xi_seed);
-        let xi_seed_3 = xi_seed * xi_seed_2;
-
-        // 7. roots h0w8
-        let omegas = &vk.omega;
-        let h0w8 = [
-            xi_seed_3,
-            xi_seed_3 * omegas.w8_1,
-            xi_seed_3 * omegas.w8_2,
-            xi_seed_3 * omegas.w8_3,
-            xi_seed_3 * omegas.w8_4,
-            xi_seed_3 * omegas.w8_5,
-            xi_seed_3 * omegas.w8_6,
-            xi_seed_3 * omegas.w8_7,
-        ];
-
-        // 8.roots h1w4
-        let xi_seed_6 = xi_seed_3 * xi_seed_3;
-        let h1w4 = [
-            xi_seed_6,
-            xi_seed_6 * omegas.w4,
-            xi_seed_6 * omegas.w4_2,
-            xi_seed_6 * omegas.w4_3,
-        ];
-
-        // 9.roots h2w3
-        let xi_seed_8 = xi_seed_6 * xi_seed_2;
-        let h2w3 = [xi_seed_8, xi_seed_8 * omegas.w3, xi_seed_8 * omegas.w3_2];
-
-        // 10.roots h3w3
-        let h3w3_0 = xi_seed_8 * omegas.wr;
-        let h3w3 = [h3w3_0, h3w3_0 * omegas.w3, h3w3_0 * omegas.w3_2];
-
-        // 11. Compute xi^n
-        let xi = xi_seed_8 * xi_seed_8 * xi_seed_8;
-        // 12. zh and zhInv
-        let zh = xi.pow(vk.n.into_bigint()) - Fr::one();
-
-        let roots = Roots {
-            h0w8,
-            h1w4,
-            h2w3,
-            h3w3,
-        };
-
+        // 6. compute xi
+        //  xi = xi_seeder^24
+        let xi = xi_seed.pow([24]);
+        // 7. Compute xin
+        //      xin = xi^n
+        let xin = xi.pow(vk.n.into_bigint());
+        //      zh = xin - 1
+        let zh = xin - Fr::one();
         let challenges = Challenges {
             alpha,
             beta,
             gamma,
             y,
             xi_seed,
-            xi_seed_2,
             xi,
             zh,
         };
-        (challenges, roots)
+        challenges
+    }
+}
+
+impl Challenges {
+    // compute beta: keccak_hash with c0, pub_input, c1
+
+    pub fn compute_beta(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
+        let concatenated = vec![
+            c0.x.into_bigint().to_bytes_be(),
+            c0.y.into_bigint().to_bytes_be(),
+            pub_input.into_bigint().to_bytes_be(),
+            c1.x.into_bigint().to_bytes_be(),
+            c1.y.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let beta = keccak_hash(concatenated);
+        beta
+    }
+
+    // 2. compute gamma: keccak_hash with beta
+    pub fn compute_gamma(beta: &Fr) -> Fr {
+        let concatenated = beta.into_bigint().to_bytes_be();
+        let gamma = keccak_hash(concatenated);
+
+        gamma
+    }
+
+    //  compute xi_seed: keccak_hash with gamma,c2
+    pub fn compute_xiseed(gamma: &Fr, c2: G1Projective) -> Fr {
+        let mut concatenated = vec![
+            gamma.into_bigint().to_bytes_be(),
+            c2.x.into_bigint().to_bytes_be(),
+            c2.y.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let xi_seed = keccak_hash(concatenated);
+        xi_seed
+    }
+
+    // compute alpha: keccak_hash with xi_seed, eval_lines
+    pub fn compute_alpha(xi_seed: &Fr, evaluations: &Evaluations) -> Fr {
+        let mut concatenated = vec![
+            xi_seed.into_bigint().to_bytes_be(),
+            evaluations.ql.into_bigint().to_bytes_be(),
+            evaluations.qr.into_bigint().to_bytes_be(),
+            evaluations.qm.into_bigint().to_bytes_be(),
+            evaluations.qo.into_bigint().to_bytes_be(),
+            evaluations.qc.into_bigint().to_bytes_be(),
+            evaluations.s1.into_bigint().to_bytes_be(),
+            evaluations.s2.into_bigint().to_bytes_be(),
+            evaluations.s3.into_bigint().to_bytes_be(),
+            evaluations.a.into_bigint().to_bytes_be(),
+            evaluations.b.into_bigint().to_bytes_be(),
+            evaluations.c.into_bigint().to_bytes_be(),
+            evaluations.z.into_bigint().to_bytes_be(),
+            evaluations.zw.into_bigint().to_bytes_be(),
+            evaluations.t1w.into_bigint().to_bytes_be(),
+            evaluations.t2w.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let alpha = keccak_hash(concatenated);
+        alpha
+    }
+
+    // compute y: keccak_hash with alpha, w1
+    pub fn compute_y(alpha: &Fr, w1: &G1Projective) -> Fr {
+        let concatenated = vec![
+            alpha.into_bigint().to_bytes_be(),
+            w1.x.into_bigint().to_bytes_be(),
+            w1.y.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let y = keccak_hash(concatenated);
+        y
     }
 }
 
@@ -213,7 +251,7 @@ impl fmt::Display for Challenges {
         write!(f, "y: {}", self.y.to_string());
         write!(f, "xi: {}", self.xi.to_string());
         write!(f, "xi_seed: {}", self.xi_seed.to_string());
-        write!(f, "xi_seed_2: {}", self.xi_seed_2.to_string());
+        // write!(f, "xi_seed_2: {}", self.xi_seed_2.to_string());
         write!(f, "zh: {}", self.zh.to_string())
     }
 }
@@ -315,7 +353,8 @@ mod test {
 
         let vk = VerificationKey::default();
         let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
-        let (challenges, roots) = Challenges::compute(&vk, &proof, &pub_input);
+        let challenges = Challenges::compute(&vk, &proof, &pub_input);
+        let roots = Roots::compute(&vk, &challenges.xi_seed);
 
         // println!("beta.: {:?}", challenges.beta.to_string());
         println!(
@@ -326,10 +365,10 @@ mod test {
             "xi_seed.: {:?}",
             decimal_to_hex(&challenges.xi_seed.to_string())
         );
-        println!(
-            "xi_seed_2.: {:?}",
-            decimal_to_hex(&challenges.xi_seed_2.to_string())
-        );
+        // println!(
+        //     "xi_seed_2.: {:?}",
+        //     decimal_to_hex(&challenges.xi_seed_2.to_string())
+        // );
         println!("");
         println!("h0w8.: {:?}", decimal_to_hex(&roots.h0w8[0].to_string()));
         println!("h1w4.: {:?}", decimal_to_hex(&roots.h1w4[0].to_string()));

@@ -1,4 +1,4 @@
-use crate::challenge::{decimal_to_hex, Challenges};
+use crate::challenge::{decimal_to_hex, Challenges, Roots};
 use crate::compute_fej::FEJ;
 use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
@@ -15,7 +15,8 @@ use ark_ff::{BigInteger, PrimeField};
 /// - the pair checking is wrong
 pub fn fflonk_verifier(vk: &VerificationKey, proof: Proof, pub_input: &Fr) {
     // 1. compute challenge
-    let (challenges, roots) = Challenges::compute(vk, &proof, pub_input);
+    let challenges = Challenges::compute(&vk, &proof, &pub_input);
+    let roots = Roots::compute(&vk, &challenges.xi_seed);
 
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
