@@ -174,10 +174,25 @@ impl Challenges {
             c1.x.into_bigint().to_bytes_be(),
             c1.y.into_bigint().to_bytes_be(),
         ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
         let beta = keccak_hash(concatenated);
+        beta
+    }
+
+    pub fn compute_beta_with_blake3(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
+        let concatenated = vec![
+            c0.x.into_bigint().to_bytes_be(),
+            c0.y.into_bigint().to_bytes_be(),
+            pub_input.into_bigint().to_bytes_be(),
+            c1.x.into_bigint().to_bytes_be(),
+            c1.y.into_bigint().to_bytes_be(),
+        ]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
+        let beta = blake3_hash(concatenated);
         beta
     }
 
@@ -196,9 +211,9 @@ impl Challenges {
             c2.x.into_bigint().to_bytes_be(),
             c2.y.into_bigint().to_bytes_be(),
         ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
         let xi_seed = keccak_hash(concatenated);
         xi_seed
     }
@@ -223,9 +238,9 @@ impl Challenges {
             evaluations.t1w.into_bigint().to_bytes_be(),
             evaluations.t2w.into_bigint().to_bytes_be(),
         ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
         let alpha = keccak_hash(concatenated);
         alpha
     }
@@ -237,9 +252,9 @@ impl Challenges {
             w1.x.into_bigint().to_bytes_be(),
             w1.y.into_bigint().to_bytes_be(),
         ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
         let y = keccak_hash(concatenated);
         y
     }
@@ -269,6 +284,17 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
     let res = Fr::from_str(&res_bigint.to_string()).unwrap();
     res
 }
+fn blake3_hash(bytes: Vec<u8>) -> Fr {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(&bytes);
+
+    let mut out = [0u8; 32];
+    let mut output_reader = hasher.finalize();
+    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
+
+    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+    res
+}
 
 // Convert decimal_str to upper_str by fmt macro.
 pub fn decimal_to_hex(decimal_str: &str) -> String {
@@ -281,23 +307,11 @@ mod test {
     use super::*;
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
     use crate::proof::Proof;
-    use ark_bn254::Fr;
+    use ark_bn254::{Fq, Fr};
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
-
-    fn blake3_hash(bytes: Vec<u8>) -> Fr {
-        let mut hasher = blake3::Hasher::new();
-        hasher.update(&bytes);
-
-        let mut out = [0u8; 32];
-        let mut output_reader = hasher.finalize_xof();
-        output_reader.fill(&mut out);
-        let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
-
-        let res = Fr::from_str(&res_bigint.to_string()).unwrap();
-        res
-    }
+    use crate::mock;
 
     pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
         let mut result = input.clone();
@@ -306,12 +320,32 @@ mod test {
         padding
     }
 
+
+    #[test]
+    fn test_compute_beta_with_blake3() {
+        let c0 = G1Affine::new(Fq::from_str("7005013949998269612234996630658580519456097203281734268590713858661772481668").unwrap(),
+                               Fq::from_str("869093939501355406318588453775243436758538662501260653214950591532352435323").unwrap(),
+        );
+
+        let c1 = G1Projective::new(Fq::from_str("12195165594784431822497303968938621279445690754376121387655513728730220550454").unwrap(),
+                                   Fq::from_str("19482351300768228183728567743975524187837254971200066453308487514712354412818").unwrap(),
+                                   Fq::one(),
+        );
+
+        let pi = Fr::from_str(mock::MOCK_PUB_INPUT).unwrap();
+
+
+        let beta = Challenges::compute_beta_with_blake3(&c0, &c1, &pi);
+        println!("beta: {:?}", beta.to_string());
+    }
+
+
     #[test]
     fn test_keccak() {
         let beta = Fr::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-        .unwrap();
+            .unwrap();
         // _beta_string: 14516932981781041565586298118536599721399535462624815668597272732223874827152
         let _beta_string = beta.to_string();
 
@@ -352,7 +386,7 @@ mod test {
         let beta = Fr::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-        .unwrap();
+            .unwrap();
         let bytes = beta.into_bigint().to_bytes_be();
 
         let f_k = keccak_hash(bytes.clone());
@@ -382,7 +416,7 @@ mod test {
             b"14516932981781041565586298118536599721399535462624815668597272732223874827152",
             10,
         )
-        .unwrap();
+            .unwrap();
         let bytes = pubSignalBigInt.to_bytes_be().1;
         println!("expect_bytes: {:?}", bytes);
         let expect_bigint = padd_bytes32(bytes);
@@ -393,7 +427,7 @@ mod test {
         let pubSignalBigInt = BigUint::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-        .unwrap();
+            .unwrap();
         let bytes = pubSignalBigInt.to_bytes_be();
         println!("expect_bytes: {:?}", bytes);
         let expect_biguint = padd_bytes32(bytes);
@@ -405,7 +439,7 @@ mod test {
         let pub_sig = Fr::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
-        .unwrap();
+            .unwrap();
         // dones't work
         let actual_bytes = pub_sig.0.to_bytes_be();
         println!("fr actual_bytes: {:?}", actual_bytes);
