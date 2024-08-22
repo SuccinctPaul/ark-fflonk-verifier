@@ -13,7 +13,7 @@ pub mod fr {
     where
         D: serde::Deserializer<'de>,
     {
-        <String as serde::Deserialize>::deserialize(data).map(|s| Fr::from_str(&s).unwrap())
+        <&str as serde::Deserialize>::deserialize(data).map(|s| Fr::from_str(s).unwrap())
     }
 }
 
@@ -34,7 +34,7 @@ pub mod fq {
     where
         D: serde::Deserializer<'de>,
     {
-        <String as serde::Deserialize>::deserialize(data).map(|s| Fq::from_str(&s).unwrap())
+        <&str as serde::Deserialize>::deserialize(data).map(|s| Fq::from_str(s).unwrap())
     }
 }
 
