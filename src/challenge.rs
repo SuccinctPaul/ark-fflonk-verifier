@@ -271,7 +271,6 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 }
 
 // Convert decimal_str to upper_str by fmt macro.
-#[deprecated]
 pub fn decimal_to_hex(decimal_str: &str) -> String {
     let decimal_number = BigInt::from_str(decimal_str).expect("Invalid decimal string");
     format!("{:X}", decimal_number)
@@ -286,6 +285,19 @@ mod test {
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+
+    fn blake3_hash(bytes: Vec<u8>) -> Fr {
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(&bytes);
+
+        let mut out = [0u8; 32];
+        let mut output_reader = hasher.finalize_xof();
+        output_reader.fill(&mut out);
+        let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
+
+        let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+        res
+    }
 
     pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
         let mut result = input.clone();
@@ -333,6 +345,21 @@ mod test {
         println!("expect_gamma: {:?}", expect_gamma.to_string());
 
         assert_eq!(actual_gamma, expect_gamma);
+    }
+
+    #[test]
+    fn test_keccak_and_blake3() {
+        let beta = Fr::from_str(
+            "14516932981781041565586298118536599721399535462624815668597272732223874827152",
+        )
+        .unwrap();
+        let bytes = beta.into_bigint().to_bytes_be();
+
+        let f_k = keccak_hash(bytes.clone());
+        let f_b = blake3_hash(bytes.clone());
+
+        // different hash algorithm should have different output.
+        assert_ne!(f_k, f_b);
     }
 
     #[test]
