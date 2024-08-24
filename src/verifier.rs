@@ -2,7 +2,7 @@ use crate::challenge::{decimal_to_hex, Challenges, Roots};
 use crate::compute_fej::FEJ;
 use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
-use crate::pairing::check_pairing;
+use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
@@ -32,5 +32,6 @@ pub fn fflonk_verifier(vk: &VerificationKey, proof: Proof, pub_input: &Fr) {
     let fej = FEJ::compute(vk, &proof, &challenges, &inv_tuple, R0, R1, R2);
 
     // 6. Validate all evaluations
-    check_pairing(vk, &proof, fej, challenges);
+    // check_pairing(vk, &proof, fej, challenges);
+    prove_and_verify_pairing(vk, &proof, fej, challenges);
 }

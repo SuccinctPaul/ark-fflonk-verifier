@@ -141,7 +141,6 @@ mod test {
     use crate::vk::SnarkJSVK;
     use ark_bn254::{Fq, Fq2, Fr};
     use num_traits::One;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn deserialize_snarkjs_vk_json() {

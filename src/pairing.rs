@@ -7,23 +7,59 @@ use ark_ec::bn::{G1Prepared, G2Prepared};
 use ark_ec::pairing::Pairing;
 use ark_ec::{bn, AffineRepr, CurveGroup};
 use num_traits::One;
+use on_proving_pairings::prover::PairingProver;
+use on_proving_pairings::setup::PairingPVKey;
+use on_proving_pairings::verifier::PairingVerifier;
 use std::ops::{Add, Mul};
 use std::str::FromStr;
 
 pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: Challenges) {
     let W2 = proof.polynomials.w2;
 
-    // first pairing value
-    // let p1 = F.add(-E).add(-J).add(W2.mul(challenges.y)).into_affine();
     let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
 
-    let p2 = -W2;
+    let p2 = W2.into_affine();
 
-    // Pi
+    // Pi: [p1, proof.w2]
     let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p2.into()];
-    // Qi
-    let rhs: [G2Prepared<ark_bn254::Config>; 2] = [vk.g2.into(), vk.x2.into()];
+    // Qi: [vk.g2, -vk.X2]
+    let rhs: [G2Prepared<ark_bn254::Config>; 2] = [vk.g2.into(), (-vk.x2).into()];
+
     let res = Bn254::multi_pairing(lhs, rhs);
 
     assert!(res.0.is_one(), "Proof verification failed!");
+}
+
+// prove and verify pairings:
+//      e(p1,vk.g2)=e(proof.w2,-vk.X2)
+pub fn prove_and_verify_pairing(
+    vk: &VerificationKey,
+    proof: &Proof,
+    fej: FEJ,
+    challenges: Challenges,
+) {
+    // prepare pairing data
+    let W2 = proof.polynomials.w2;
+
+    let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
+
+    let p2 = W2.into_affine();
+
+    // Pi: [p1, proof.w2]
+    let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p2.into()];
+    // Qi: [vk.g2, -vk.X2]
+    let rhs: [G2Prepared<ark_bn254::Config>; 2] = [vk.g2.into(), (-vk.x2).into()];
+
+    // setup: finding_c
+    let pairing_pvk = PairingPVKey::setup(lhs.to_vec(), rhs.to_vec());
+
+    // eval_points: [P1,P2]
+    let eval_points = vec![p1, p2];
+    // precompute lines: [Q1,Q2,Q3]
+    let q_prepared_lines = rhs[0..2].to_vec();
+
+    let final_f = PairingProver::prove_dual_pairing(eval_points, &q_prepared_lines, &pairing_pvk);
+
+    // verify
+    PairingVerifier::verify(&pairing_pvk, final_f);
 }
