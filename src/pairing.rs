@@ -17,10 +17,11 @@ pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: 
     // let p1 = F.add(-E).add(-J).add(W2.mul(challenges.y)).into_affine();
     let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
 
-    // third pairing value
-    let p3 = -W2;
+    let p2 = -W2;
 
-    let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p3.into()];
+    // Pi
+    let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p2.into()];
+    // Qi
     let rhs: [G2Prepared<ark_bn254::Config>; 2] = [vk.g2.into(), vk.x2.into()];
     let res = Bn254::multi_pairing(lhs, rhs);
 
