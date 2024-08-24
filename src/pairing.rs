@@ -10,10 +10,13 @@ use num_traits::One;
 use on_proving_pairings::prover::PairingProver;
 use on_proving_pairings::setup::PairingPVKey;
 use on_proving_pairings::verifier::PairingVerifier;
-use std::ops::{Add, Mul};
-use std::str::FromStr;
 
-pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: Challenges) {
+pub fn check_pairing(
+    vk: &VerificationKey,
+    proof: &Proof,
+    fej: &FEJ,
+    challenges: Challenges,
+) -> bool {
     let W2 = proof.polynomials.w2;
 
     let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
@@ -27,7 +30,8 @@ pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: 
 
     let res = Bn254::multi_pairing(lhs, rhs);
 
-    assert!(res.0.is_one(), "Proof verification failed!");
+    // assert!(res.0.is_one(), "Proof verification failed!");
+    res.0.is_one()
 }
 
 // prove and verify pairings:
@@ -35,9 +39,9 @@ pub fn check_pairing(vk: &VerificationKey, proof: &Proof, fej: FEJ, challenges: 
 pub fn prove_and_verify_pairing(
     vk: &VerificationKey,
     proof: &Proof,
-    fej: FEJ,
+    fej: &FEJ,
     challenges: Challenges,
-) {
+) -> bool {
     // prepare pairing data
     let W2 = proof.polynomials.w2;
 
@@ -61,5 +65,5 @@ pub fn prove_and_verify_pairing(
     let final_f = PairingProver::prove_dual_pairing(eval_points, &q_prepared_lines, &pairing_pvk);
 
     // verify
-    PairingVerifier::verify(&pairing_pvk, final_f);
+    PairingVerifier::verify(&pairing_pvk, final_f)
 }

@@ -13,25 +13,38 @@ use ark_ff::{BigInteger, PrimeField};
 /// Can fail if:
 /// - the provided inverse in the proof is wrong
 /// - the pair checking is wrong
-pub fn fflonk_verifier(vk: &VerificationKey, proof: Proof, pub_input: &Fr) {
+///
+/// Params:
+///  @is_recursive_verifier:
+///       if true, will leverage power of `prove and verify pairing`.
+///       if false, will use default pairing.
+pub fn fflonk_verifier(
+    vk: &VerificationKey,
+    proof: &Proof,
+    pub_input: &Fr,
+    is_recursive_verifier: bool,
+) -> bool {
     // 1. compute challenge
-    let challenges = Challenges::compute(&vk, &proof, &pub_input);
+    let challenges = Challenges::compute(&vk, proof, &pub_input);
 
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
-    let inv_tuple = Inversion::build(vk, &proof, &challenges);
+    let inv_tuple = Inversion::build(vk, proof, &challenges);
 
     // 3. Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let pi = -inv_tuple.eval_l1 * pub_input;
 
     // 4. Computes r1(y) and r2(y)
-    let (R0, R1, R2) = compute_r(vk, &proof, &challenges, &inv_tuple, &pi);
+    let (R0, R1, R2) = compute_r(vk, proof, &challenges, &inv_tuple, &pi);
 
     // 5. compute fej
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
-    let fej = FEJ::compute(vk, &proof, &challenges, &inv_tuple, R0, R1, R2);
+    let fej = FEJ::compute(vk, proof, &challenges, &inv_tuple, R0, R1, R2);
 
     // 6. Validate all evaluations
-    // check_pairing(vk, &proof, fej, challenges);
-    prove_and_verify_pairing(vk, &proof, fej, challenges);
+    if is_recursive_verifier {
+        prove_and_verify_pairing(vk, proof, &fej, challenges)
+    } else {
+        check_pairing(vk, proof, &fej, challenges)
+    }
 }
