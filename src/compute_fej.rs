@@ -24,13 +24,14 @@ impl FEJ {
         proof: &Proof,
         challenge: &Challenges,
         invers_tuple: &Inversion,
-        h0w8: Vec<Fr>,
         R0: Fr,
         R1: Fr,
         R2: Fr,
     ) -> Self {
         let polynomials = &proof.polynomials;
-        let numerator = h0w8
+        let numerator = challenge
+            .roots
+            .h0w8
             .iter()
             .fold(Fr::one(), |acc, h0_w8_i| acc * (challenge.y - *h0_w8_i));
         let quotient1 = challenge.alpha * numerator * invers_tuple.denH1;
