@@ -13,7 +13,7 @@ pub mod fr {
     where
         D: serde::Deserializer<'de>,
     {
-        <String as serde::Deserialize>::deserialize(data).map(|s| Fr::from_str(&s).unwrap())
+        <&str as serde::Deserialize>::deserialize(data).map(|s| Fr::from_str(s).unwrap())
     }
 }
 
@@ -34,7 +34,7 @@ pub mod fq {
     where
         D: serde::Deserializer<'de>,
     {
-        <String as serde::Deserialize>::deserialize(data).map(|s| Fq::from_str(&s).unwrap())
+        <&str as serde::Deserialize>::deserialize(data).map(|s| Fq::from_str(s).unwrap())
     }
 }
 
@@ -141,7 +141,6 @@ mod test {
     use crate::vk::SnarkJSVK;
     use ark_bn254::{Fq, Fq2, Fr};
     use num_traits::One;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn deserialize_snarkjs_vk_json() {

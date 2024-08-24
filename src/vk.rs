@@ -171,7 +171,7 @@ impl From<SnarkJSVK> for VerificationKey {
         let k = origin.power;
 
         let omega = Omega {
-            w1: origin.w,
+            w: origin.w,
             wr: origin.wr,
             w3: origin.w3,
             w4: origin.w4,
@@ -196,7 +196,7 @@ impl From<SnarkJSVK> for VerificationKey {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Omega {
-    pub w1: Fr,
+    pub w: Fr,
     pub wr: Fr,
 
     pub w3: Fr,
@@ -230,7 +230,7 @@ impl Omega {
         let w8_7 = w8_6 * origin.w8_1;
 
         Self {
-            w1: origin.w1,
+            w: origin.w,
             wr: origin.wr,
             w3: origin.w3,
             w3_2,
@@ -251,7 +251,7 @@ impl Omega {
 impl Default for Omega {
     fn default() -> Self {
         Self {
-            w1: Fr::from_str(
+            w: Fr::from_str(
                 "5709868443893258075976348696661355716898495876243883251619397131511003808859",
             )
             .unwrap(),

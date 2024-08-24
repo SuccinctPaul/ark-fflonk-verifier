@@ -18,7 +18,14 @@ mod test {
         let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
 
         let vk = VerificationKey::default();
-        fflonk_verifier(&vk, proof, &pub_input);
+        assert!(
+            fflonk_verifier(&vk, &proof, &pub_input, false),
+            "Proof verification failed!(is_recursive_verifier=false)"
+        );
+        assert!(
+            fflonk_verifier(&vk, &proof, &pub_input, true),
+            "Proof verification failed!(is_recursive_verifier=true)"
+        );
     }
 
     #[test]
@@ -112,6 +119,6 @@ mod test {
         )
         .unwrap();
 
-        fflonk_verifier(&vk, proof, &pubs);
+        fflonk_verifier(&vk, &proof, &pubs, false);
     }
 }
