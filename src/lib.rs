@@ -2,7 +2,7 @@ pub mod challenge;
 pub mod compute_fej;
 pub mod compute_r;
 pub mod inversion;
-mod mock;
+pub mod mock;
 pub mod pairing;
 pub mod proof;
 pub(crate) mod serde;
