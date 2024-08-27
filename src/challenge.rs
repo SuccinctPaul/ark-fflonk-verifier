@@ -125,17 +125,22 @@ impl Challenges {
         // 1. compute beta: keccak_hash with c0, pub_input, c1
         let beta = Self::compute_beta(&vk.c0, &proof.polynomials.c1, pub_input);
 
+        println!("beta: {:?}", beta.to_string());
         // 2. compute gamma: keccak_hash with beta
         let gamma = Self::compute_gamma(&beta);
+        println!("gamma: {:?}", gamma.to_string());
 
         // 3. compute xi_seed: keccak_hash with gamma,c2
         let xi_seed = Self::compute_xiseed(&gamma, proof.polynomials.c2);
+        println!("xi_seed: {:?}", xi_seed.to_string());
 
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
         let alpha = Self::compute_alpha(&xi_seed, &proof.evaluations);
+        println!("alpha: {:?}", alpha.to_string());
 
         // 5. compute y: keccak_hash with alpha, w1
         let y = Self::compute_y(&alpha, &proof.polynomials.w1);
+        println!("y: {:?}", y.to_string());
 
         /////////////////////////////////////////////
         //////////// Above is keccak hash
@@ -144,11 +149,17 @@ impl Challenges {
         // 6. compute xi
         //  xi = xi_seeder^24
         let xi = xi_seed.pow([24]);
+        println!("xi: {:?}", xi.to_string());
+
         // 7. Compute xin
         //      xin = xi^n
         let xin = xi.pow(vk.n.into_bigint());
+        println!("xin: {:?}", xin.to_string());
+
         //      zh = xin - 1
         let zh = xin - Fr::one();
+        println!("zh: {:?}", zh.to_string());
+
         let challenges = Challenges {
             alpha,
             beta,
@@ -279,9 +290,9 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 
     let mut out = [0u8; 32];
     hasher.finalize(&mut out);
-    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
 
-    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+    let res = Fr::from_be_bytes_mod_order(&out);
+
     res
 }
 fn blake3_hash(bytes: Vec<u8>) -> Fr {
