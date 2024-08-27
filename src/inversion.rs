@@ -1,7 +1,7 @@
 use crate::challenge::{Challenges, Roots};
 use crate::proof::Proof;
 use crate::vk::{Omega, VerificationKey};
-use ark_bn254::Fr;
+use ark_bn254::{Fq, Fr};
 use ark_ff::{Field, One, PrimeField, Zero};
 use num_bigint::BigUint;
 use num_traits::FromPrimitive;
@@ -13,10 +13,11 @@ use std::str::FromStr;
 // pub type LiS2 = [Fr; 6];
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Inversion {
+    // L[1], it's related with pub_input numbers.
     pub eval_l1: Fr,
     pub lis_values: LISValues,
-    pub denH1: Fr,
-    pub denH2: Fr,
+    pub den_h1: Fr,
+    pub den_h2: Fr,
     pub zh_inv: Fr,
 }
 
@@ -28,6 +29,22 @@ pub struct LISValues {
 }
 
 impl Inversion {
+    fn compute_den_h1_base(roots: &Roots, y: &Fr) -> Fr {
+        (y - &roots.h1w4[0]) * (y - &roots.h1w4[1]) * (y - &roots.h1w4[2]) * (y - &roots.h1w4[3])
+    }
+    fn compute_den_h2_base(roots: &Roots, y: &Fr) -> Fr {
+        (y - &roots.h2w3[0])
+            * (y - &roots.h2w3[1])
+            * (y - &roots.h2w3[2])
+            * (y - &roots.h3w3[0])
+            * (y - &roots.h3w3[1])
+            * (y - &roots.h3w3[2])
+    }
+
+    fn compute_eval_l1_base(xi: &Fr, n: &Fr) -> Fr {
+        (xi - &Fr::one()) * n
+    }
+
     // To divide prime fields the Extended Euclidean Algorithm for computing modular inverses is needed.
     // The Montgomery batch inversion algorithm allow us to compute n inverses reducing to a single one inversion.
     // More info: https://vitalik.ca/general/2018/07/21/starks_part_3.html
@@ -41,31 +58,25 @@ impl Inversion {
         let (y, xi, zh) = (challenges.y, challenges.xi, challenges.zh);
 
         // 1. compute den_h1,den_h2 base
-        let denH1 =
-            (y - roots.h1w4[0]) * (y - roots.h1w4[1]) * (y - roots.h1w4[2]) * (y - roots.h1w4[3]);
-        let denH2 = (y - roots.h2w3[0])
-            * (y - roots.h2w3[1])
-            * (y - roots.h2w3[2])
-            * (y - roots.h3w3[0])
-            * (y - roots.h3w3[1])
-            * (y - roots.h3w3[2]);
+        let den_h1_base = Self::compute_den_h1_base(&roots, &y);
+        let den_h2_base = Self::compute_den_h2_base(&roots, &y);
 
-        let li_s0_inv = Self::computeLiS0(y, &roots.h0w8);
+        let li_s0 = Self::compute_li_s0(y, &roots.h0w8);
 
-        let li_s1_inv = Self::computeLiS1(y, &roots.h1w4);
+        let li_s1 = Self::compute_li_s1(y, &roots.h1w4);
 
-        let li_s2_inv = Self::computeLiS2(vk, y, xi, &roots.h2w3, &roots.h3w3);
+        let li_s2 = Self::compute_li_s2(vk, y, xi, &roots.h2w3, &roots.h3w3);
 
-        let mut eval_l1 = vk.n * (xi - Fr::one());
+        let mut eval_l1 = Self::compute_eval_l1_base(&xi, &vk.n);
 
-        let (lis_values, denH1, denH2) = Self::inverseArray(
+        let (lis_values, den_h1, den_h2) = Self::inverseArray(
             proof,
-            denH1,
-            denH2,
+            den_h1_base,
+            den_h2_base,
             zh,
-            li_s0_inv,
-            li_s1_inv,
-            li_s2_inv,
+            li_s0,
+            li_s1,
+            li_s2,
             &mut eval_l1,
         );
 
@@ -74,14 +85,14 @@ impl Inversion {
         Inversion {
             eval_l1,
             lis_values,
-            denH1,
-            denH2,
+            den_h1,
+            den_h2,
 
             zh_inv: zh.inverse().unwrap(),
         }
     }
 
-    pub fn computeLiS0(y: Fr, h0w8: &[Fr]) -> [Fr; 8] {
+    pub fn compute_li_s0(y: Fr, h0w8: &[Fr]) -> [Fr; 8] {
         // root0^6 * 8
         let mut den1 = h0w8[0].pow([6]) * Fr::from(8);
 
@@ -95,7 +106,7 @@ impl Inversion {
         li_s0_inv
     }
 
-    pub fn computeLiS1(y: Fr, h1w4: &[Fr]) -> [Fr; 4] {
+    pub fn compute_li_s1(y: Fr, h1w4: &[Fr]) -> [Fr; 4] {
         let mut den1 = h1w4[0].pow([2]) * Fr::from(4);
 
         let mut li_s1_inv: [Fr; 4] = [Fr::zero(); 4];
@@ -109,7 +120,7 @@ impl Inversion {
         li_s1_inv
     }
 
-    pub fn computeLiS2(vk: &VerificationKey, y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
+    pub fn compute_li_s2(vk: &VerificationKey, y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
         let mut den1 = Fr::from(3) * h2w3[0] * (xi - xi * vk.omega.w);
 
         let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
@@ -130,16 +141,16 @@ impl Inversion {
 
     pub fn inverseArray(
         proof: &Proof,
-        denH1: Fr,
-        denH2: Fr,
+        den_h1: Fr,
+        den_h2: Fr,
         zhInv: Fr,
         li_s0_inv: [Fr; 8],
         li_s1_inv: [Fr; 4],
         li_s2_inv: [Fr; 6],
         eval_l1: &mut Fr,
     ) -> (LISValues, Fr, Fr) {
-        let mut local_den_h1 = denH1.clone();
-        let mut local_den_h2 = denH2.clone();
+        let mut local_den_h1 = den_h1.clone();
+        let mut local_den_h2 = den_h2.clone();
         let mut local_zh_inv = zhInv.clone();
         let mut local_li_s0_inv = li_s0_inv.clone();
         let mut local_li_s1_inv = li_s1_inv.clone();
@@ -149,10 +160,10 @@ impl Inversion {
 
         _acc.push(zhInv.clone());
 
-        let mut acc = zhInv.mul(denH1);
+        let mut acc = zhInv.mul(den_h1);
         _acc.push(acc.clone());
 
-        acc = acc.mul(denH2);
+        acc = acc.mul(den_h2);
         _acc.push(acc.clone());
 
         for i in 0..8 {
@@ -206,12 +217,12 @@ impl Inversion {
 
         _acc.pop();
         inv = acc.mul(_acc.last().unwrap().clone());
-        acc = acc.mul(denH2);
+        acc = acc.mul(den_h2);
         local_den_h2 = inv;
 
         _acc.pop();
         inv = acc.mul(_acc.last().unwrap().clone());
-        acc = acc.mul(denH1);
+        acc = acc.mul(den_h1);
         local_den_h1 = inv;
 
         local_zh_inv = acc;

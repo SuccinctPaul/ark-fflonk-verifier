@@ -1,5 +1,7 @@
 pub mod challenge;
 pub mod compute_fej;
+mod compute_lagrange;
+mod compute_pi;
 pub mod compute_r;
 pub mod inversion;
 pub mod mock;

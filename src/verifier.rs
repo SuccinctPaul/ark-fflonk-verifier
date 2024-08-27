@@ -4,6 +4,7 @@ use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
+use crate::compute_pi::compute_pi;
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
@@ -31,8 +32,8 @@ pub fn fflonk_verifier(
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let inv_tuple = Inversion::build(vk, proof, &challenges);
 
-    // 3. Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
-    let pi = -inv_tuple.eval_l1 * pub_input;
+    // 3. Compute public input polynomial evaluation PI(xi) = PI(xi) = -\sum_i^l public_input_i·L_i(xi)
+    let pi = compute_pi(&vec![*pub_input], &vec![inv_tuple.eval_l1]);
 
     // 4. Computes r1(y) and r2(y)
     let (R0, R1, R2) = compute_r(vk, proof, &challenges, &inv_tuple, &pi);

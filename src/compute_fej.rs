@@ -34,8 +34,8 @@ impl FEJ {
             .h0w8
             .iter()
             .fold(Fr::one(), |acc, h0_w8_i| acc * (challenge.y - *h0_w8_i));
-        let quotient1 = challenge.alpha * numerator * invers_tuple.denH1;
-        let quotient2 = challenge.alpha * challenge.alpha * numerator * invers_tuple.denH2;
+        let quotient1 = challenge.alpha * numerator * invers_tuple.den_h1;
+        let quotient2 = challenge.alpha * challenge.alpha * numerator * invers_tuple.den_h2;
 
         let f = polynomials.c1 * quotient1 + polynomials.c2 * quotient2 + vk.c0;
         let e = G1Affine::generator() * (R0 + quotient1 * R1 + quotient2 * R2);
