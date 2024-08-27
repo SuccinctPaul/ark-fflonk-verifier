@@ -318,37 +318,6 @@ mod test {
     }
 
     #[test]
-    fn test_compute_beta_with_blake3() {
-        let c0 = G1Affine::new(
-            Fq::from_str(
-                "7005013949998269612234996630658580519456097203281734268590713858661772481668",
-            )
-            .unwrap(),
-            Fq::from_str(
-                "869093939501355406318588453775243436758538662501260653214950591532352435323",
-            )
-            .unwrap(),
-        );
-
-        let c1 = G1Projective::new(
-            Fq::from_str(
-                "12195165594784431822497303968938621279445690754376121387655513728730220550454",
-            )
-            .unwrap(),
-            Fq::from_str(
-                "19482351300768228183728567743975524187837254971200066453308487514712354412818",
-            )
-            .unwrap(),
-            Fq::one(),
-        );
-
-        let pi = Fr::from_str(mock::MOCK_PUB_INPUT).unwrap();
-
-        let beta = Challenges::compute_beta_with_blake3(&c0, &c1, &pi);
-        println!("beta: {:?}", beta.to_string());
-    }
-
-    #[test]
     fn test_keccak() {
         let beta = Fr::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
