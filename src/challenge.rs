@@ -192,21 +192,6 @@ impl Challenges {
         beta
     }
 
-    pub fn compute_beta_with_blake3(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
-        let concatenated = vec![
-            c0.x.into_bigint().to_bytes_be(),
-            c0.y.into_bigint().to_bytes_be(),
-            pub_input.into_bigint().to_bytes_be(),
-            c1.x.into_bigint().to_bytes_be(),
-            c1.y.into_bigint().to_bytes_be(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
-        let beta = blake3_hash(concatenated);
-        beta
-    }
-
     // 2. compute gamma: keccak_hash with beta
     pub fn compute_gamma(beta: &Fr) -> Fr {
         let concatenated = beta.into_bigint().to_bytes_be();
@@ -295,17 +280,6 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 
     res
 }
-fn blake3_hash(bytes: Vec<u8>) -> Fr {
-    let mut hasher = blake3::Hasher::new();
-    hasher.update(&bytes);
-
-    let mut out = [0u8; 32];
-    let mut output_reader = hasher.finalize();
-    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
-
-    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
-    res
-}
 
 // Convert decimal_str to upper_str by fmt macro.
 pub fn decimal_to_hex(decimal_str: &str) -> String {
@@ -323,6 +297,18 @@ mod test {
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+
+    fn blake3_hash(bytes: Vec<u8>) -> Fr {
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(&bytes);
+
+        let mut out = [0u8; 32];
+        let mut output_reader = hasher.finalize();
+        let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
+
+        let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+        res
+    }
 
     pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
         let mut result = input.clone();
