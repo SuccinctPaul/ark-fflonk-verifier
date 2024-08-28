@@ -41,8 +41,14 @@ impl Inversion {
             * (y - &roots.h3w3[2])
     }
 
+    // Li_2 = n * (xi - 1)
     pub fn compute_eval_l1_base(xi: &Fr, n: &Fr) -> Fr {
         (xi - &Fr::one()) * n
+    }
+
+    // Li_2 = n * (xi - w1)
+    pub fn compute_eval_l2_base(xi: &Fr, n: &Fr, w1: &Fr) -> Fr {
+        (xi - w1) * n
     }
 
     // To divide prime fields the Extended Euclidean Algorithm for computing modular inverses is needed.
@@ -57,8 +63,9 @@ impl Inversion {
         let roots = &challenges.roots;
         let (y, xi, zh) = (challenges.y, challenges.xi, challenges.zh);
 
-        // 1. compute den_h1,den_h2 base
+        // 1. compute den_h1_base
         let den_h1_base = Self::compute_den_h1_base(&roots, &y);
+        // 1. compute den_h2_base
         let den_h2_base = Self::compute_den_h2_base(&roots, &y);
 
         let li_s0 = Self::compute_li_s0(y, &roots.h0w8);
@@ -99,8 +106,7 @@ impl Inversion {
         let mut li_s0_inv: [Fr; 8] = [Fr::zero(); 8];
 
         for i in 0..8 {
-            let coeff = (i * 7) % 8;
-            li_s0_inv[i] = den1 * h0w8[0 + coeff] * (y - h0w8[0 + (i)]);
+            li_s0_inv[i] = den1 * h0w8[(i * 7) % 8] * (y - h0w8[i]);
         }
 
         li_s0_inv
@@ -112,28 +118,26 @@ impl Inversion {
         let mut li_s1_inv: [Fr; 4] = [Fr::zero(); 4];
 
         for i in 0..4 {
-            let coeff = (i * 3) % 4;
-
-            li_s1_inv[i] = den1 * h1w4[0 + coeff] * (y - h1w4[0 + (i)]);
+            li_s1_inv[i] = den1 * h1w4[(i * 3) % 4] * (y - h1w4[i]);
         }
 
         li_s1_inv
     }
 
     pub fn compute_li_s2(vk: &VerificationKey, y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
-        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xi * vk.omega.w);
+        let xiw = xi * vk.omega.w;
+
+        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xiw);
 
         let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
 
         for i in 0..3 {
-            let coeff = (i * 2) % 3;
-            li_s2_inv[i] = den1 * h2w3[0 + coeff] * (y - h2w3[0 + (i)]);
+            li_s2_inv[i] = den1 * h2w3[(i * 2) % 3] * (y - h2w3[i]);
         }
 
-        let den1 = Fr::from(3) * h3w3[0] * (xi * vk.omega.w - xi);
+        let den1 = Fr::from(3) * h3w3[0] * (xiw - xi);
         for i in 0..3 {
-            let coeff = (i * 2) % 3;
-            li_s2_inv[i + 3] = den1 * h3w3[0 + coeff] * (y - h3w3[0 + (i)]);
+            li_s2_inv[i + 3] = den1 * h3w3[(i * 2) % 3] * (y - h3w3[i]);
         }
 
         li_s2_inv
