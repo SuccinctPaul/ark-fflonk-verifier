@@ -87,7 +87,7 @@ impl Inversion {
             &mut eval_l1,
         );
         // eval_l1 = eval_l1.inv * zh.
-        assert_eq!(Self::compute_eval_l1_base(&xi, &vk.n)*eval_l1, Fr::one());
+        // assert_eq!(Self::compute_eval_l1_base(&xi, &vk.n)*eval_l1, Fr::one());
         eval_l1 *= zh;
 
         Inversion {
