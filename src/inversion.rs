@@ -86,7 +86,7 @@ impl Inversion {
             li_s2,
             &mut eval_l1,
         );
-
+        // eval_l1 = eval_l1.inv * zh.
         eval_l1 *= zh;
 
         Inversion {
@@ -101,7 +101,7 @@ impl Inversion {
 
     pub fn compute_li_s0(y: Fr, h0w8: &[Fr]) -> [Fr; 8] {
         // root0^6 * 8
-        let mut den1 = h0w8[0].pow([6]) * Fr::from(8);
+        let den1 = h0w8[0].pow([6]) * Fr::from(8);
 
         let mut li_s0_inv: [Fr; 8] = [Fr::zero(); 8];
 
@@ -113,7 +113,7 @@ impl Inversion {
     }
 
     pub fn compute_li_s1(y: Fr, h1w4: &[Fr]) -> [Fr; 4] {
-        let mut den1 = h1w4[0].pow([2]) * Fr::from(4);
+        let den1 = h1w4[0].pow([2]) * Fr::from(4);
 
         let mut li_s1_inv: [Fr; 4] = [Fr::zero(); 4];
 
@@ -127,7 +127,7 @@ impl Inversion {
     pub fn compute_li_s2(vk: &VerificationKey, y: Fr, xi: Fr, h2w3: &[Fr], h3w3: &[Fr]) -> [Fr; 6] {
         let xiw = xi * vk.omega.w;
 
-        let mut den1 = Fr::from(3) * h2w3[0] * (xi - xiw);
+        let den1 = Fr::from(3) * h2w3[0] * (xi - xiw);
 
         let mut li_s2_inv: [Fr; 6] = [Fr::zero(); 6];
 
@@ -143,93 +143,102 @@ impl Inversion {
         li_s2_inv
     }
 
+    // Computes the inverse of an array of values
+    // See https://vitalik.ca/general/2018/07/21/starks_part_3.html in section where explain fields operations
+    // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
     pub fn inverseArray(
         proof: &Proof,
-        den_h1: Fr,
-        den_h2: Fr,
-        zhInv: Fr,
-        li_s0_inv: [Fr; 8],
-        li_s1_inv: [Fr; 4],
-        li_s2_inv: [Fr; 6],
+        den_h1_base: Fr,
+        den_h2_base: Fr,
+        zh: Fr,
+        li_s0: [Fr; 8],
+        li_s1: [Fr; 4],
+        li_s2: [Fr; 6],
         eval_l1: &mut Fr,
     ) -> (LISValues, Fr, Fr) {
-        let mut local_den_h1 = den_h1.clone();
-        let mut local_den_h2 = den_h2.clone();
-        let mut local_zh_inv = zhInv.clone();
-        let mut local_li_s0_inv = li_s0_inv.clone();
-        let mut local_li_s1_inv = li_s1_inv.clone();
-        let mut local_li_s2_inv = li_s2_inv.clone();
+        // build accumulator
+        let mut accumulator: Vec<Fr> = Vec::new();
+        accumulator.push(zh.clone());
 
-        let mut _acc: Vec<Fr> = Vec::new();
+        // acc = zh*den_h1
+        let mut acc = zh.mul(den_h1_base);
+        accumulator.push(acc.clone());
 
-        _acc.push(zhInv.clone());
+        // acc = zh*den_h1*den_h2
+        acc = acc.mul(den_h2_base);
+        accumulator.push(acc.clone());
 
-        let mut acc = zhInv.mul(den_h1);
-        _acc.push(acc.clone());
-
-        acc = acc.mul(den_h2);
-        _acc.push(acc.clone());
-
+        // acc = zh*den_h1*den_h2 * MUL(li_s0[i])
         for i in 0..8 {
-            acc = acc * local_li_s0_inv[i];
-            _acc.push(acc);
+            acc = acc * li_s0[i];
+            accumulator.push(acc);
         }
+        // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i])
         for i in 0..4 {
-            acc = acc * local_li_s1_inv[i];
-
-            _acc.push(acc);
+            acc = acc * li_s1[i];
+            accumulator.push(acc);
         }
+        // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])
         for i in 0..6 {
-            acc = acc * local_li_s2_inv[i];
-            _acc.push(acc);
+            acc = acc * li_s2[i];
+            accumulator.push(acc);
         }
+        // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1
         acc = acc * eval_l1.clone();
+        // check `zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1 * proof.inv = 1`
+        assert_eq!(acc * proof.evaluations.inv, Fr::one());
+        // Inverse is : inverse of the value computed by accumulator.
+        // eg: zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1 * proof.inv = 1
+        //     So that
+        //      eval_l1_inv
+        //          = eval_l1.inverse()
+        //          = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i]) * proof.inv
 
-        _acc.push(acc);
-
-        let check = acc * proof.evaluations.inv;
-        assert_eq!(check, Fr::one());
-
+        // inv = proof.inv
         let mut inv = proof.evaluations.inv;
-        let mut acc = inv.clone();
+        // acc = proof.inv
+        let mut acc = proof.evaluations.inv;
 
-        _acc.pop();
-        inv = acc.mul(_acc.last().unwrap().clone());
+        // inv = proof.inv * zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])
+        inv = acc * accumulator.pop().unwrap();
         acc = acc.mul(eval_l1.clone());
         *eval_l1 = inv;
 
+        let mut local_li_s2_inv = [Fr::zero(); 6];
+
         for i in (0..6).rev() {
-            _acc.pop();
-            inv = acc.mul(_acc.last().unwrap().clone());
-            acc = acc.mul(local_li_s2_inv[i]);
+            inv = acc * accumulator.pop().unwrap();
+            acc = acc.mul(li_s2[i]);
             local_li_s2_inv[i] = inv;
         }
 
+        let mut local_li_s1_inv = [Fr::zero(); 4];
         for i in (0..4).rev() {
-            _acc.pop();
-            inv = acc.mul(_acc.last().unwrap().clone());
-            acc = acc.mul(local_li_s1_inv[i]);
+            inv = acc * accumulator.pop().unwrap();
+
+            acc = acc.mul(li_s1[i]);
             local_li_s1_inv[i] = inv;
         }
 
+        let mut local_li_s0_inv = [Fr::zero(); 8];
         for i in (0..8).rev() {
-            _acc.pop();
-            inv = acc.mul(_acc.last().unwrap().clone());
-            acc = acc.mul(local_li_s0_inv[i]);
+            inv = acc * accumulator.pop().unwrap();
+            acc = acc.mul(li_s0[i]);
             local_li_s0_inv[i] = inv;
         }
 
-        _acc.pop();
-        inv = acc.mul(_acc.last().unwrap().clone());
-        acc = acc.mul(den_h2);
-        local_den_h2 = inv;
+        inv = acc * accumulator.pop().unwrap();
+        acc = acc.mul(den_h2_base);
+        let local_den_h2 = inv;
+        assert_eq!(local_den_h2, den_h2_base.inverse().unwrap());
 
-        _acc.pop();
-        inv = acc.mul(_acc.last().unwrap().clone());
-        acc = acc.mul(den_h1);
-        local_den_h1 = inv;
+        inv = acc * accumulator.pop().unwrap();
+        acc = acc.mul(den_h1_base);
+        let local_den_h1 = inv;
+        assert_eq!(local_den_h1, den_h1_base.inverse().unwrap());
 
-        local_zh_inv = acc;
+        let local_zh_inv = acc;
+        assert_eq!(local_zh_inv, zh.inverse().unwrap());
 
         let lis_values = LISValues {
             li_s0_inv: local_li_s0_inv,
