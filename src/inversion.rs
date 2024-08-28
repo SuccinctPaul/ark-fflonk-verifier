@@ -29,10 +29,10 @@ pub struct LISValues {
 }
 
 impl Inversion {
-    fn compute_den_h1_base(roots: &Roots, y: &Fr) -> Fr {
+    pub fn compute_den_h1_base(roots: &Roots, y: &Fr) -> Fr {
         (y - &roots.h1w4[0]) * (y - &roots.h1w4[1]) * (y - &roots.h1w4[2]) * (y - &roots.h1w4[3])
     }
-    fn compute_den_h2_base(roots: &Roots, y: &Fr) -> Fr {
+    pub fn compute_den_h2_base(roots: &Roots, y: &Fr) -> Fr {
         (y - &roots.h2w3[0])
             * (y - &roots.h2w3[1])
             * (y - &roots.h2w3[2])
@@ -41,7 +41,7 @@ impl Inversion {
             * (y - &roots.h3w3[2])
     }
 
-    fn compute_eval_l1_base(xi: &Fr, n: &Fr) -> Fr {
+    pub fn compute_eval_l1_base(xi: &Fr, n: &Fr) -> Fr {
         (xi - &Fr::one()) * n
     }
 
