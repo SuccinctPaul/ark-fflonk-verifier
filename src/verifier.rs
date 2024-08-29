@@ -32,15 +32,24 @@ pub fn fflonk_verifier(
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
     let inv_tuple = Inversion::build(vk, proof, &challenges);
 
+    println!("pub: {:?}", pub_input.to_string());
+    println!("eval_l1: {:?}", inv_tuple.eval_l1.to_string());
     // 3. Compute public input polynomial evaluation PI(xi) = PI(xi) = -\sum_i^l public_input_i·L_i(xi)
     let pi = compute_pi(&vec![*pub_input], &vec![inv_tuple.eval_l1]);
+    println!("pi: {:?}", pi.to_string());
 
     // 4. Computes r1(y) and r2(y)
     let (R0, R1, R2) = compute_r(vk, proof, &challenges, &inv_tuple, &pi);
+    println!("R0: {:?}", R0.to_string());
+    println!("R1: {:?}", R1.to_string());
+    println!("R2: {:?}", R2.to_string());
 
     // 5. compute fej
     // Compute full batched polynomial commitment [F]_1, group-encoded batch evaluation [E]_1 and the full difference [J]_1
     let fej = FEJ::compute(vk, proof, &challenges, &inv_tuple, R0, R1, R2);
+    println!("fej.F: {:?}", fej.F.to_string());
+    println!("fej.E: {:?}", fej.E.to_string());
+    println!("fej.J: {:?}", fej.J.to_string());
 
     // 6. Validate all evaluations
     if is_recursive_verifier {
