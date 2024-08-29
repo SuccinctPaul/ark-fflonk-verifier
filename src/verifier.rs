@@ -4,6 +4,7 @@ use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
+use crate::compute_a1::compute_a1;
 use crate::compute_pi::compute_pi;
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
@@ -51,10 +52,13 @@ pub fn fflonk_verifier(
     println!("fej.E: {:?}", fej.E.to_string());
     println!("fej.J: {:?}", fej.J.to_string());
 
-    // 6. Validate all evaluations
+    // 6. compute_a1
+    let a1 = compute_a1(proof, &fej, &challenges);
+
+    // 7. Validate all evaluations
     if is_recursive_verifier {
-        prove_and_verify_pairing(vk, proof, &fej, challenges)
+        prove_and_verify_pairing(vk, proof, &a1)
     } else {
-        check_pairing(vk, proof, &fej, challenges)
+        check_pairing(vk, proof, &a1)
     }
 }

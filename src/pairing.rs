@@ -11,17 +11,10 @@ use on_proving_pairings::prover::PairingProver;
 use on_proving_pairings::setup::PairingPVKey;
 use on_proving_pairings::verifier::PairingVerifier;
 
-pub fn check_pairing(
-    vk: &VerificationKey,
-    proof: &Proof,
-    fej: &FEJ,
-    challenges: Challenges,
-) -> bool {
-    let W2 = proof.polynomials.w2;
-
-    let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
-
-    let p2 = W2.into_affine();
+pub fn check_pairing(vk: &VerificationKey, proof: &Proof, a1: &G1Affine) -> bool {
+    // prepare pairing data
+    let p1 = a1;
+    let p2 = proof.polynomials.w2.into_affine();
 
     // Pi: [p1, proof.w2]
     let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p2.into()];
@@ -36,18 +29,10 @@ pub fn check_pairing(
 
 // prove and verify pairings:
 //      e(p1,vk.g2)=e(proof.w2,-vk.X2)
-pub fn prove_and_verify_pairing(
-    vk: &VerificationKey,
-    proof: &Proof,
-    fej: &FEJ,
-    challenges: Challenges,
-) -> bool {
+pub fn prove_and_verify_pairing(vk: &VerificationKey, proof: &Proof, a1: &G1Affine) -> bool {
     // prepare pairing data
-    let W2 = proof.polynomials.w2;
-
-    let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
-
-    let p2 = W2.into_affine();
+    let p1 = a1;
+    let p2 = proof.polynomials.w2.into_affine();
 
     // Pi: [p1, proof.w2]
     let lhs: [G1Prepared<ark_bn254::Config>; 2] = [p1.into(), p2.into()];
@@ -58,7 +43,7 @@ pub fn prove_and_verify_pairing(
     let pairing_pvk = PairingPVKey::setup(lhs.to_vec(), rhs.to_vec());
 
     // eval_points: [P1,P2]
-    let eval_points = vec![p1, p2];
+    let eval_points = vec![*p1, p2];
     // precompute lines: [Q1,Q2,Q3]
     let q_prepared_lines = rhs[0..2].to_vec();
 

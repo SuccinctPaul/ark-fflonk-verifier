@@ -1,4 +1,5 @@
 pub mod challenge;
+mod compute_a1;
 pub mod compute_fej;
 mod compute_lagrange;
 pub mod compute_pi;
