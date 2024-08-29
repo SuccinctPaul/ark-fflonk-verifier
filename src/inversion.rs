@@ -18,6 +18,7 @@ pub struct Inversion {
     pub lis_values: LISValues,
     pub den_h1: Fr,
     pub den_h2: Fr,
+    // ZH
     pub zh_inv: Fr,
 }
 
@@ -144,20 +145,24 @@ impl Inversion {
         li_s2_inv
     }
 
-    // Computes the inverse of an array of values
-    // See https://vitalik.ca/general/2018/07/21/starks_part_3.html in section where explain fields operations
-    // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
-    pub fn inverseArray(
-        proof: &Proof,
-        den_h1_base: Fr,
-        den_h2_base: Fr,
-        zh: Fr,
-        li_s0: [Fr; 8],
-        li_s1: [Fr; 4],
-        li_s2: [Fr; 6],
-        eval_l1: &mut Fr,
-    ) -> (LISValues, Fr, Fr) {
-        // build accumulator
+    // build accumulator
+    //      [0]=zh
+    //      [1]=zh*den_h1_base
+    //      [2]=zh*den_h1_base*den_h2_base
+    //      [3..=10]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])
+    //      [11..=14]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])
+    //      [15..=20]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
+    //      [15..=20]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
+    //      [21]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])*eval_l1
+    pub fn accumulator(
+        den_h1_base: &Fr,
+        den_h2_base: &Fr,
+        zh: &Fr,
+        li_s0: &[Fr; 8],
+        li_s1: &[Fr; 4],
+        li_s2: &[Fr; 6],
+        eval_l1: &Fr,
+    ) -> Vec<Fr> {
         let mut accumulator: Vec<Fr> = Vec::new();
         accumulator.push(zh.clone());
 
@@ -184,10 +189,51 @@ impl Inversion {
             acc = acc * li_s2[i];
             accumulator.push(acc);
         }
+
         // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1
         acc = acc * eval_l1.clone();
+        accumulator.push(acc);
+        accumulator
+    }
+
+    pub fn check_accumulator(accumulator: &Vec<Fr>, proof: &Proof) {
         // check `zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1 * proof.inv = 1`
-        assert_eq!(acc * proof.evaluations.inv, Fr::one());
+        assert_eq!(
+            accumulator.last().unwrap() * &proof.evaluations.inv,
+            Fr::one()
+        );
+    }
+
+    // Computes the inverse of an array of values
+    // See https://vitalik.ca/general/2018/07/21/starks_part_3.html in section where explain fields operations
+    // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
+    pub fn inverseArray(
+        proof: &Proof,
+        den_h1_base: Fr,
+        den_h2_base: Fr,
+        zh: Fr,
+        li_s0: [Fr; 8],
+        li_s1: [Fr; 4],
+        li_s2: [Fr; 6],
+        eval_l1: &mut Fr,
+    ) -> (LISValues, Fr, Fr) {
+        let mut accumulator = Self::accumulator(
+            &den_h1_base,
+            &den_h2_base,
+            &zh,
+            &li_s0,
+            &li_s1,
+            &li_s2,
+            eval_l1,
+        );
+
+        Self::check_accumulator(&accumulator, proof);
+
+        // Start Inverse:
+
+        // pop eval_li out
+        accumulator.pop();
+
         // Inverse is : inverse of the value computed by accumulator.
         // eg: zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1 * proof.inv = 1
         //     So that
@@ -200,8 +246,9 @@ impl Inversion {
         // acc = proof.inv
         let mut acc = proof.evaluations.inv;
 
-        // inv = proof.inv * zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])
+        // inv = proof.inv * zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])=eval_inv
         inv = acc * accumulator.pop().unwrap();
+        // acc = inv*eval
         acc = acc.mul(eval_l1.clone());
         *eval_l1 = inv;
 
