@@ -149,10 +149,9 @@ impl Inversion {
     //      [0]=zh
     //      [1]=zh*den_h1_base
     //      [2]=zh*den_h1_base*den_h2_base
-    //      [3..=10]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])
-    //      [11..=14]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])
-    //      [15..=20]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
-    //      [15..=20]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
+    //      [3..10]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])
+    //      [11..14]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])
+    //      [15..20]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
     //      [21]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])*eval_l1
     pub fn accumulator(
         den_h1_base: &Fr,
