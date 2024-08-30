@@ -1,4 +1,8 @@
 use ark_bn254::Fr;
 
 // Compute Lagrange polynomial evaluation L_i(xi)
-// pub fn compute_lagrange(zh: &Fr, Li_inv: &Fr, w1: &Fr) -> Fr {}
+// Equation:
+//      [zh * Li_1, zh * Li_2 * w]
+pub fn compute_lagrange(zh: &Fr, Li_inv: &Fr) -> Fr {
+    zh * Li_inv
+}
