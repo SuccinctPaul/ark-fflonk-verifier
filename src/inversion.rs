@@ -79,12 +79,12 @@ impl Inversion {
 
         let (lis_values, den_h1, den_h2, eval_l1) = Self::inverse_array(
             proof,
-            den_h1_base,
-            den_h2_base,
-            zh,
-            li_s0,
-            li_s1,
-            li_s2,
+            &den_h1_base,
+            &den_h2_base,
+            &zh,
+            &li_s0,
+            &li_s1,
+            &li_s2,
             &eval_l1_base,
         );
         // assert_eq!(Self::compute_eval_l1_base(&xi, &vk.n)*eval_l1, Fr::one());
@@ -203,12 +203,12 @@ impl Inversion {
     pub fn inverse_with_accumulator(
         accumulator: &mut Vec<Fr>,
         proof: &Proof,
-        den_h1_base: Fr,
-        den_h2_base: Fr,
-        zh: Fr,
-        li_s0: [Fr; 8],
-        li_s1: [Fr; 4],
-        li_s2: [Fr; 6],
+        den_h1_base: &Fr,
+        den_h2_base: &Fr,
+        zh: &Fr,
+        li_s0: &[Fr; 8],
+        li_s1: &[Fr; 4],
+        li_s2: &[Fr; 6],
         eval_l1: &Fr,
     ) -> (LISValues, Fr, Fr, Fr) {
         // Start Inverse:
@@ -284,12 +284,12 @@ impl Inversion {
     // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
     pub fn inverse_array(
         proof: &Proof,
-        den_h1_base: Fr,
-        den_h2_base: Fr,
-        zh: Fr,
-        li_s0: [Fr; 8],
-        li_s1: [Fr; 4],
-        li_s2: [Fr; 6],
+        den_h1_base: &Fr,
+        den_h2_base: &Fr,
+        zh: &Fr,
+        li_s0: &[Fr; 8],
+        li_s1: &[Fr; 4],
+        li_s2: &[Fr; 6],
         eval_l1: &Fr,
     ) -> (LISValues, Fr, Fr, Fr) {
         let mut accumulator = Self::accumulator(
