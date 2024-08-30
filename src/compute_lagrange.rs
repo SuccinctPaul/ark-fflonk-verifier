@@ -1,4 +1,5 @@
 use ark_bn254::Fr;
+use std::ops::Mul;
 
 // Compute Lagrange polynomial evaluation L_i(xi)
 // Equation:

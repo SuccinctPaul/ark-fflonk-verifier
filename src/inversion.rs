@@ -1,4 +1,5 @@
 use crate::challenge::{Challenges, Roots};
+use crate::compute_lagrange::compute_lagrange;
 use crate::proof::Proof;
 use crate::vk::{Omega, VerificationKey};
 use ark_bn254::{Fq, Fr};
@@ -87,10 +88,13 @@ impl Inversion {
             &li_s2,
             &eval_l1_base,
         );
-        // assert_eq!(Self::compute_eval_l1_base(&xi, &vk.n)*eval_l1, Fr::one());
+        assert_eq!(eval_l1_base * eval_l1, Fr::one());
+
+        //  compute lagrange of L_i
+        let L_i = compute_lagrange(&challenges.zh, &eval_l1);
 
         Inversion {
-            eval_l1,
+            eval_l1: L_i,
             lis_values,
             den_h1,
             den_h2,
@@ -209,7 +213,7 @@ impl Inversion {
         li_s0: &[Fr; 8],
         li_s1: &[Fr; 4],
         li_s2: &[Fr; 6],
-        eval_l1: &Fr,
+        eval_l1_base: &Fr,
     ) -> (LISValues, Fr, Fr, Fr) {
         // Start Inverse:
 
@@ -231,9 +235,9 @@ impl Inversion {
         // inv = proof.inv * zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])=eval_inv
         inv = acc * accumulator.pop().unwrap();
         // acc = inv*eval
-        acc = acc.mul(eval_l1.clone());
-        let eval_l1_inv = inv * zh;
-
+        acc = acc.mul(eval_l1_base.clone());
+        let eval_l1_inv = inv;
+        assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
         let mut local_li_s2_inv = [Fr::zero(); 6];
 
         for i in (0..6).rev() {
@@ -267,14 +271,15 @@ impl Inversion {
         let local_den_h1 = inv;
         assert_eq!(local_den_h1, den_h1_base.inverse().unwrap());
 
-        let local_zh_inv = acc;
-        assert_eq!(local_zh_inv, zh.inverse().unwrap());
+        let Z_H = acc;
+        assert_eq!(Z_H, zh.inverse().unwrap());
 
         let lis_values = LISValues {
             li_s0_inv: local_li_s0_inv,
             li_s1_inv: local_li_s1_inv,
             li_s2_inv: local_li_s2_inv,
         };
+        assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
 
         (lis_values, local_den_h1, local_den_h2, eval_l1_inv)
     }
@@ -304,7 +309,7 @@ impl Inversion {
 
         Self::check_accumulator(&accumulator, proof);
 
-        Self::inverse_with_accumulator(
+        let (lis_values, local_den_h1, local_den_h2, eval_l1_inv) = Self::inverse_with_accumulator(
             &mut accumulator,
             proof,
             den_h1_base,
@@ -314,6 +319,9 @@ impl Inversion {
             li_s1,
             li_s2,
             &eval_l1_base,
-        )
+        );
+        assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
+
+        (lis_values, local_den_h1, local_den_h2, eval_l1_inv)
     }
 }
