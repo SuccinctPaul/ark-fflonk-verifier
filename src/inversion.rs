@@ -75,9 +75,9 @@ impl Inversion {
 
         let li_s2 = Self::compute_li_s2(vk, y, xi, &roots.h2w3, &roots.h3w3);
 
-        let mut eval_l1 = Self::compute_eval_l1_base(&xi, &vk.n);
+        let eval_l1_base = Self::compute_eval_l1_base(&xi, &vk.n);
 
-        let (lis_values, den_h1, den_h2) = Self::inverseArray(
+        let (lis_values, den_h1, den_h2, eval_l1) = Self::inverseArray(
             proof,
             den_h1_base,
             den_h2_base,
@@ -85,11 +85,9 @@ impl Inversion {
             li_s0,
             li_s1,
             li_s2,
-            &mut eval_l1,
+            &eval_l1_base,
         );
-        // eval_l1 = eval_l1.inv * zh.
         // assert_eq!(Self::compute_eval_l1_base(&xi, &vk.n)*eval_l1, Fr::one());
-        eval_l1 *= zh;
 
         Inversion {
             eval_l1,
@@ -214,8 +212,8 @@ impl Inversion {
         li_s0: [Fr; 8],
         li_s1: [Fr; 4],
         li_s2: [Fr; 6],
-        eval_l1: &mut Fr,
-    ) -> (LISValues, Fr, Fr) {
+        eval_l1: &Fr,
+    ) -> (LISValues, Fr, Fr, Fr) {
         let mut accumulator = Self::accumulator(
             &den_h1_base,
             &den_h2_base,
@@ -249,7 +247,7 @@ impl Inversion {
         inv = acc * accumulator.pop().unwrap();
         // acc = inv*eval
         acc = acc.mul(eval_l1.clone());
-        *eval_l1 = inv;
+        let eval_l1_inv = inv * zh;
 
         let mut local_li_s2_inv = [Fr::zero(); 6];
 
@@ -293,6 +291,6 @@ impl Inversion {
             li_s2_inv: local_li_s2_inv,
         };
 
-        (lis_values, local_den_h1, local_den_h2)
+        (lis_values, local_den_h1, local_den_h2, eval_l1_inv)
     }
 }
