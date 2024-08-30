@@ -77,7 +77,7 @@ impl Inversion {
 
         let eval_l1_base = Self::compute_eval_l1_base(&xi, &vk.n);
 
-        let (lis_values, den_h1, den_h2, eval_l1) = Self::inverseArray(
+        let (lis_values, den_h1, den_h2, eval_l1) = Self::inverse_array(
             proof,
             den_h1_base,
             den_h2_base,
@@ -94,7 +94,6 @@ impl Inversion {
             lis_values,
             den_h1,
             den_h2,
-
             zh_inv: zh.inverse().unwrap(),
         }
     }
@@ -201,10 +200,8 @@ impl Inversion {
         );
     }
 
-    // Computes the inverse of an array of values
-    // See https://vitalik.ca/general/2018/07/21/starks_part_3.html in section where explain fields operations
-    // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
-    pub fn inverseArray(
+    pub fn inverse_with_accumulator(
+        accumulator: &mut Vec<Fr>,
         proof: &Proof,
         den_h1_base: Fr,
         den_h2_base: Fr,
@@ -214,18 +211,6 @@ impl Inversion {
         li_s2: [Fr; 6],
         eval_l1: &Fr,
     ) -> (LISValues, Fr, Fr, Fr) {
-        let mut accumulator = Self::accumulator(
-            &den_h1_base,
-            &den_h2_base,
-            &zh,
-            &li_s0,
-            &li_s1,
-            &li_s2,
-            eval_l1,
-        );
-
-        Self::check_accumulator(&accumulator, proof);
-
         // Start Inverse:
 
         // pop eval_li out
@@ -292,5 +277,43 @@ impl Inversion {
         };
 
         (lis_values, local_den_h1, local_den_h2, eval_l1_inv)
+    }
+
+    // Computes the inverse of an array of values
+    // See https://vitalik.ca/general/2018/07/21/starks_part_3.html in section where explain fields operations
+    // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
+    pub fn inverse_array(
+        proof: &Proof,
+        den_h1_base: Fr,
+        den_h2_base: Fr,
+        zh: Fr,
+        li_s0: [Fr; 8],
+        li_s1: [Fr; 4],
+        li_s2: [Fr; 6],
+        eval_l1: &Fr,
+    ) -> (LISValues, Fr, Fr, Fr) {
+        let mut accumulator = Self::accumulator(
+            &den_h1_base,
+            &den_h2_base,
+            &zh,
+            &li_s0,
+            &li_s1,
+            &li_s2,
+            eval_l1,
+        );
+
+        Self::check_accumulator(&accumulator, proof);
+
+        Self::inverse_with_accumulator(
+            &mut accumulator,
+            proof,
+            den_h1_base,
+            den_h2_base,
+            zh,
+            li_s0,
+            li_s1,
+            li_s2,
+            &eval_l1,
+        )
     }
 }
