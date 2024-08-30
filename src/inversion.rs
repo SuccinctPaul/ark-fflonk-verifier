@@ -290,7 +290,7 @@ impl Inversion {
         li_s0: &[Fr; 8],
         li_s1: &[Fr; 4],
         li_s2: &[Fr; 6],
-        eval_l1: &Fr,
+        eval_l1_base: &Fr,
     ) -> (LISValues, Fr, Fr, Fr) {
         let mut accumulator = Self::accumulator(
             &den_h1_base,
@@ -299,7 +299,7 @@ impl Inversion {
             &li_s0,
             &li_s1,
             &li_s2,
-            eval_l1,
+            eval_l1_base,
         );
 
         Self::check_accumulator(&accumulator, proof);
@@ -313,7 +313,7 @@ impl Inversion {
             li_s0,
             li_s1,
             li_s2,
-            &eval_l1,
+            &eval_l1_base,
         )
     }
 }
