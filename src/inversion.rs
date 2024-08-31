@@ -78,7 +78,7 @@ impl Inversion {
 
         let eval_l1_base = Self::compute_eval_l1_base(&xi, &vk.n);
 
-        let mut res = Self::inverse_array(
+        let res = Self::inverse_array(
             proof,
             &den_h1_base,
             &den_h2_base,
@@ -90,10 +90,6 @@ impl Inversion {
         );
         assert_eq!(eval_l1_base * res.eval_l1, Fr::one());
 
-        //  compute lagrange of L_i
-        let L_i = compute_lagrange(&challenges.zh, &res.eval_l1);
-
-        res.eval_l1 = L_i;
         res
     }
 
