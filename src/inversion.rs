@@ -282,11 +282,11 @@ impl Inversion {
             li_s1_inv: local_li_s1_inv,
             li_s2_inv: local_li_s2_inv,
         };
-        assert_eq!(
-            eval_l1_inv * eval_l1_base,
-            Fr::one(),
-            "Here, eval_l1 should be inverse of eval_l1"
-        );
+
+        assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
+        assert_eq!(zh * &Z_H, Fr::one());
+        assert_eq!(local_den_h1 * den_h1_base, Fr::one());
+        assert_eq!(local_den_h2 * den_h2_base, Fr::one());
 
         Self {
             eval_l1: eval_l1_inv,
