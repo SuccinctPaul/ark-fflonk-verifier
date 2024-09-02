@@ -1,9 +1,9 @@
 use crate::challenge::{Challenges, Roots};
 use crate::proof::Proof;
-use crate::vk::{VerificationKey};
-use ark_bn254::{Fr};
+use crate::vk::VerificationKey;
+use ark_bn254::Fr;
 use ark_ff::{Field, One, Zero};
-use std::ops::{Mul};
+use std::ops::Mul;
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Inversion {

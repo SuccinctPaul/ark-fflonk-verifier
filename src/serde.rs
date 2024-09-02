@@ -66,9 +66,9 @@ mod fq2 {
 
 pub mod g2 {
     use ark_bn254::{Fq2, G2Projective};
-    
+
     use ark_serialize::Valid;
-    
+
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
@@ -101,9 +101,9 @@ pub mod g2 {
 
 pub mod g1 {
     use ark_bn254::{Fq, G1Projective};
-    
+
     use ark_serialize::Valid;
-    
+
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
@@ -135,11 +135,11 @@ pub mod g1 {
 
 #[cfg(test)]
 mod test {
-    
+
     use crate::mock::MOCK_PROOF_DATA;
     use crate::proof::Proof;
     use crate::vk::SnarkJSVK;
-    use ark_bn254::{Fq};
+    use ark_bn254::Fq;
     use num_traits::One;
 
     #[test]

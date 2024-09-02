@@ -1,7 +1,7 @@
 use crate::vk::VerificationKey;
 use ark_bn254::{Fr, G1Affine, G1Projective};
 use ark_ff::{BigInteger, Field, One, PrimeField};
-use num_bigint::{BigInt};
+use num_bigint::BigInt;
 use std::fmt;
 
 use crate::proof::{Evaluations, Proof};
@@ -278,10 +278,8 @@ pub fn decimal_to_hex(decimal_str: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    
-    
-    
-    use ark_bn254::{Fr};
+
+    use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;

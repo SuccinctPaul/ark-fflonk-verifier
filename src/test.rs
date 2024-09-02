@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -7,8 +6,7 @@ mod test {
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
     use crate::verifier::fflonk_verifier;
     use crate::vk::{SnarkJSVK, VerificationKey};
-    use ark_bn254::{Fr};
-    
+    use ark_bn254::Fr;
 
     #[test]
     fn test_fflonk_verifier() {
