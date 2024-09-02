@@ -191,7 +191,8 @@ impl Inversion {
         // check `zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1 * proof.inv = 1`
         assert_eq!(
             accumulator.last().unwrap() * &proof.evaluations.inv,
-            Fr::one()
+            Fr::one(),
+            "Inversion::check_accumulator failed."
         );
     }
 
