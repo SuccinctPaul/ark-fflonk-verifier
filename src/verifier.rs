@@ -4,13 +4,10 @@ use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
-use crate::compute_a1::compute_a1;
-use crate::compute_lagrange::compute_lagrange;
-use crate::compute_pi::compute_pi;
+use crate::compute::{compute_a1, compute_lagrange, compute_pi};
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
-use ark_ff::{BigInteger, PrimeField};
 
 /// Use the given verification key `vk` to verify the `proof`` against the given `pubs` public inputs.
 /// Can fail if:

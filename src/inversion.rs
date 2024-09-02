@@ -1,17 +1,10 @@
 use crate::challenge::{Challenges, Roots};
-use crate::compute_lagrange::compute_lagrange;
 use crate::proof::Proof;
 use crate::vk::{Omega, VerificationKey};
 use ark_bn254::{Fq, Fr};
 use ark_ff::{Field, One, PrimeField, Zero};
-use num_bigint::BigUint;
-use num_traits::FromPrimitive;
 use std::ops::{Add, Mul, Sub};
-use std::str::FromStr;
 
-// pub type LiS0 = [Fr; 8];
-// pub type LiS1 = [Fr; 4];
-// pub type LiS2 = [Fr; 6];
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Inversion {
     // L[1], it's related with pub_input numbers.
