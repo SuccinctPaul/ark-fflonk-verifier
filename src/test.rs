@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use super::*;
+
     use std::str::FromStr;
 
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
