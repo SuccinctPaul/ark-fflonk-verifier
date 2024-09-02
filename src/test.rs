@@ -4,6 +4,7 @@ mod test {
     use std::str::FromStr;
 
     use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
+    use crate::proof::Proof;
     use crate::verifier::fflonk_verifier;
     use crate::vk::{SnarkJSVK, VerificationKey};
     use ark_bn254::Fr;
