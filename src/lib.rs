@@ -1,5 +1,5 @@
 pub mod challenge;
-mod compute;
+pub mod compute;
 pub mod compute_fej;
 pub mod compute_r;
 pub mod inversion;
