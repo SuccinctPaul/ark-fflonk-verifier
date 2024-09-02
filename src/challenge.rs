@@ -1,13 +1,11 @@
 use crate::vk::VerificationKey;
-use ark_bn254::{Fr, G1Affine, G1Projective, G2Affine};
+use ark_bn254::{Fr, G1Affine, G1Projective};
 use ark_ff::{BigInteger, Field, One, PrimeField};
-use num_bigint::{BigInt, BigUint};
+use num_bigint::{BigInt};
 use std::fmt;
 
 use crate::proof::{Evaluations, Proof};
-use crate::vk::Omega;
 use ark_ec::AffineRepr;
-use num_traits::FromPrimitive;
 use std::ops::Mul;
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
@@ -192,7 +190,7 @@ impl Challenges {
 
     //  compute xi_seed: keccak_hash with gamma,c2
     pub fn compute_xiseed(gamma: &Fr, c2: G1Projective) -> Fr {
-        let mut concatenated = vec![
+        let concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
             c2.x.into_bigint().to_bytes_be(),
             c2.y.into_bigint().to_bytes_be(),
@@ -206,7 +204,7 @@ impl Challenges {
 
     // compute alpha: keccak_hash with xi_seed, eval_lines
     pub fn compute_alpha(xi_seed: &Fr, evaluations: &Evaluations) -> Fr {
-        let mut concatenated = vec![
+        let concatenated = vec![
             xi_seed.into_bigint().to_bytes_be(),
             evaluations.ql.into_bigint().to_bytes_be(),
             evaluations.qr.into_bigint().to_bytes_be(),
@@ -280,10 +278,10 @@ pub fn decimal_to_hex(decimal_str: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::mock;
-    use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
-    use crate::proof::Proof;
-    use ark_bn254::{Fq, Fr};
+    
+    
+    
+    use ark_bn254::{Fr};
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
@@ -292,8 +290,8 @@ mod test {
         let mut hasher = blake3::Hasher::new();
         hasher.update(&bytes);
 
-        let mut out = [0u8; 32];
-        let mut output_reader = hasher.finalize();
+        let out = [0u8; 32];
+        let output_reader = hasher.finalize();
         let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
 
         let res = Fr::from_str(&res_bigint.to_string()).unwrap();

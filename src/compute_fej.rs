@@ -2,9 +2,8 @@ use crate::challenge::Challenges;
 use crate::inversion::Inversion;
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
-use ark_bn254::{Fq, Fr, G1Affine, G1Projective};
+use ark_bn254::{Fr, G1Affine};
 use ark_ec::{AffineRepr, CurveGroup};
-use ark_ff::{BigInteger, PrimeField};
 use num_traits::One;
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]

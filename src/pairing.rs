@@ -1,11 +1,9 @@
-use crate::challenge::Challenges;
-use crate::compute_fej::FEJ;
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
-use ark_bn254::{Bn254, Fq, Fq2, G1Affine, G2Affine};
+use ark_bn254::{Bn254, G1Affine};
 use ark_ec::bn::{G1Prepared, G2Prepared};
 use ark_ec::pairing::Pairing;
-use ark_ec::{bn, AffineRepr, CurveGroup};
+use ark_ec::{CurveGroup};
 use num_traits::One;
 use on_proving_pairings::prover::PairingProver;
 use on_proving_pairings::setup::PairingPVKey;

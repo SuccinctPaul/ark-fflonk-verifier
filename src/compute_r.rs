@@ -1,4 +1,4 @@
-use crate::challenge::{Challenges, Roots};
+use crate::challenge::{Challenges};
 use crate::inversion::Inversion;
 use crate::proof::{Evaluations, Proof};
 use crate::vk::VerificationKey;

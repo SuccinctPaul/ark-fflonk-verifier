@@ -1,4 +1,4 @@
-use crate::challenge::{decimal_to_hex, Challenges, Roots};
+use crate::challenge::{Challenges};
 use crate::compute_fej::FEJ;
 use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
