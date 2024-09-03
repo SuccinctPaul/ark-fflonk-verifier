@@ -39,7 +39,7 @@ pub fn compute_r(
 // where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
 // and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
 // and computing C0(xi)
-fn calculateR0(proof: &Proof, challenges: &Challenges, li_s0_inv: [Fr; 8]) -> Fr {
+pub fn calculateR0(proof: &Proof, challenges: &Challenges, li_s0_inv: [Fr; 8]) -> Fr {
     let h0w8 = challenges.roots.h0w8.to_vec();
     let Evaluations {
         ql,
@@ -264,7 +264,7 @@ fn calculateR0(proof: &Proof, challenges: &Challenges, li_s0_inv: [Fr; 8]) -> Fr
 // where x = {h1, h1w4, h1w4^2, h1w4^3}
 // and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
 // and computing T0(xi)
-fn calculateR1(
+pub fn calculateR1(
     proof: &Proof,
     challenges: &Challenges,
     pi: &Fr,
@@ -349,7 +349,7 @@ fn calculateR1(
 // where x = {[h2, h2w3, h2w3^2], [h3, h3w3, h3w3^2]}
 // and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}
 // and computing T1(xi) and T2(xi)
-fn calculateR2(
+pub fn calculateR2(
     vk: &VerificationKey,
     proof: &Proof,
     challenges: &Challenges,
