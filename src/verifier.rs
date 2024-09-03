@@ -4,8 +4,8 @@ use crate::compute_r::compute_r;
 use crate::inversion::Inversion;
 use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
-use crate::compute::{compute_a1, compute_lagrange, compute_pi};
 use crate::proof::Proof;
+use crate::utils::{compute_a1, compute_lagrange, compute_pi};
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
 
