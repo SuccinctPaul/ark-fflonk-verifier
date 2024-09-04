@@ -30,8 +30,8 @@ pub fn compute_a1(proof: &Proof, fej: &FEJ, challenges: &Challenges) -> G1Affine
     let W2 = proof.polynomials.w2;
 
     // F = F - E - J + y·W2
-    let p1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
-    p1
+    let a1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
+    a1
 }
 
 pub fn polynomial_eval(
