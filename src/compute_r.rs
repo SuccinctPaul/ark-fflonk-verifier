@@ -75,10 +75,10 @@ pub fn calculateR1(
     let num = challenges.y.pow([4]) - challenges.xi;
     let evaluations = &proof.evaluations;
 
-    let t0 = ((evaluations.ql * evaluations.a)
-        + (evaluations.qr * evaluations.b)
-        + (evaluations.qm * evaluations.a * evaluations.b)
-        + (evaluations.qo * evaluations.c)
+    let t0 = (evaluations.ql * evaluations.a
+        + evaluations.qr * evaluations.b
+        + evaluations.qm * evaluations.a * evaluations.b
+        + evaluations.qo * evaluations.c
         + evaluations.qc
         + pi)
         * zh_inv;
@@ -99,13 +99,15 @@ pub fn calculateR2(
     zh_inv: &Fr,
     li_s2_inv: [Fr; 6],
 ) -> Fr {
+    // base = y^6 - y^3*xi*(1-w) + xi^2*w
     let base = challenges.y.pow([6])
         - (challenges.y.pow([3]) * challenges.xi * (Fr::one() + vk.omega.w))
         + (challenges.xi * challenges.xi * vk.omega.w);
     let evaluations = &proof.evaluations;
 
-    let beta_xi = challenges.beta * challenges.xi;
     let t1 = (evaluations.z - Fr::one()) * L_1 * zh_inv;
+    let beta_xi = challenges.beta * challenges.xi;
+
     let t2 = (((evaluations.a + beta_xi + challenges.gamma)
         * (evaluations.b + beta_xi * vk.k1 + challenges.gamma)
         * (evaluations.c + beta_xi * vk.k2 + challenges.gamma)
