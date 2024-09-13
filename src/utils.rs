@@ -1,10 +1,15 @@
 use crate::challenge::Challenges;
 use crate::compute_fej::FEJ;
 use crate::proof::Proof;
+use crate::vk::SnarkJSVK;
 use ark_bn254::{Fr, G1Affine};
 use ark_ec::CurveGroup;
 use num_traits::{One, Zero};
+use std::fs::File;
+use std::io::Read;
 use std::ops::Neg;
+use std::path::Path;
+use std::str::FromStr;
 
 // Compute Lagrange polynomial evaluation L_i(xi)
 // Equation:
@@ -52,4 +57,15 @@ pub fn polynomial_eval(
         acc = acc + c1_value * base * inv[i];
     }
     acc
+}
+
+// For now, only support single public inputs.
+pub fn load_public_input<P: AsRef<Path>>(pi_path: P) -> anyhow::Result<Fr> {
+    let mut file = File::open(pi_path)?;
+    let mut vk_json = String::new();
+    file.read_to_string(&mut vk_json)?;
+    let mut pub_inputs: Vec<String> = serde_json::from_str(&vk_json)?;
+    assert_eq!(pub_inputs.len(), 1);
+    let fr_str = pub_inputs.pop().unwrap();
+    Ok(Fr::from_str(&fr_str).unwrap())
 }

@@ -21,8 +21,10 @@ tiny-keccak = { version = "2.0", features = ["keccak"] }
 
 on-proving-pairings = {git="https://github.com/SuccinctPaul/on-proving-pairings.git",tag= "v0.1.0", package = "on-proving-pairings"}
 
-[dev-dependencies]
+anyhow = "1.0.86"
 serde_json = "1.0.114"
+
+[dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 blake3 = "1.5.4"
 
