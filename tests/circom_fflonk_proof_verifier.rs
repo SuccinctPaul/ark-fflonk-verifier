@@ -11,7 +11,8 @@ fn circom_fflonk_proof_verifier() {
     let circom_file_path = current_dir.join("resources/circom/");
 
     let public_file = circom_file_path.join("public.json");
-    let vk_file = circom_file_path.join("verification_key.json");
+    // let vk_file = circom_file_path.join("verification_key.json");
+    let vk_file = circom_file_path.join("zksync_vk.json");
     let proof_file = circom_file_path.join("proof.json");
 
     let snarkjs_vk = SnarkJSVK::load(vk_file).unwrap();
