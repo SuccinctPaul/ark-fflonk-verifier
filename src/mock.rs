@@ -1,7 +1,3 @@
-use ark_bn254::Fr;
-use once_cell::unsync::Lazy;
-use std::str::FromStr;
-
 pub static MOCK_PUB_INPUT: &str =
     "14516932981781041565586298118536599721399535462624815668597272732223874827152";
 pub static MOCK_PROOF_DATA: [&str; 24] = [

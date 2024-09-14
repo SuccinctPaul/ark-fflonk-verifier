@@ -1,8 +1,10 @@
 use ark_bn254::{Fq, Fr, G1Projective};
-use ark_ec::*;
 use ark_ff::One;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use std::str::FromStr;
 
 /// The Proof data: use the implemented conversion traits `TryFrom` to build it.
@@ -64,6 +66,14 @@ pub struct Evaluations {
     pub inv: Fr,
 }
 impl Proof {
+    pub fn load<P: AsRef<Path>>(vk_path: P) -> anyhow::Result<Self> {
+        let mut file = File::open(vk_path)?;
+        let mut vk_json = String::new();
+        file.read_to_string(&mut vk_json)?;
+        let snarkjs_vk: Self = serde_json::from_str(&vk_json)?;
+        Ok(snarkjs_vk)
+    }
+
     pub fn construct(proof_values: Vec<&str>) -> Self {
         assert_eq!(proof_values.len(), 24);
         let c1_x = Fq::from_str(proof_values[0]).unwrap();

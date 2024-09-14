@@ -1,13 +1,11 @@
 use crate::vk::VerificationKey;
-use ark_bn254::{Fr, G1Affine, G1Projective, G2Affine};
+use ark_bn254::{Fr, G1Affine, G1Projective};
 use ark_ff::{BigInteger, Field, One, PrimeField};
-use num_bigint::{BigInt, BigUint};
+use num_bigint::BigInt;
 use std::fmt;
 
 use crate::proof::{Evaluations, Proof};
-use crate::vk::Omega;
 use ark_ec::AffineRepr;
-use num_traits::FromPrimitive;
 use std::ops::Mul;
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
@@ -141,14 +139,15 @@ impl Challenges {
         //////////// Above is keccak hash
         /////////////////////////////////////////////
 
-        // 6. compute xi
-        //  xi = xi_seeder^24
+        // 6. compute xi=xi_seeder^24
         let xi = xi_seed.pow([24]);
-        // 7. Compute xin
-        //      xin = xi^n
+
+        // 7. Compute xin = xi^n
         let xin = xi.pow(vk.n.into_bigint());
-        //      zh = xin - 1
+
+        // 8. zh = xin - 1
         let zh = xin - Fr::one();
+
         let challenges = Challenges {
             alpha,
             beta,
@@ -181,21 +180,6 @@ impl Challenges {
         beta
     }
 
-    pub fn compute_beta_with_blake3(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
-        let concatenated = vec![
-            c0.x.into_bigint().to_bytes_be(),
-            c0.y.into_bigint().to_bytes_be(),
-            pub_input.into_bigint().to_bytes_be(),
-            c1.x.into_bigint().to_bytes_be(),
-            c1.y.into_bigint().to_bytes_be(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>();
-        let beta = blake3_hash(concatenated);
-        beta
-    }
-
     // 2. compute gamma: keccak_hash with beta
     pub fn compute_gamma(beta: &Fr) -> Fr {
         let concatenated = beta.into_bigint().to_bytes_be();
@@ -206,7 +190,7 @@ impl Challenges {
 
     //  compute xi_seed: keccak_hash with gamma,c2
     pub fn compute_xiseed(gamma: &Fr, c2: G1Projective) -> Fr {
-        let mut concatenated = vec![
+        let concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
             c2.x.into_bigint().to_bytes_be(),
             c2.y.into_bigint().to_bytes_be(),
@@ -220,7 +204,7 @@ impl Challenges {
 
     // compute alpha: keccak_hash with xi_seed, eval_lines
     pub fn compute_alpha(xi_seed: &Fr, evaluations: &Evaluations) -> Fr {
-        let mut concatenated = vec![
+        let concatenated = vec![
             xi_seed.into_bigint().to_bytes_be(),
             evaluations.ql.into_bigint().to_bytes_be(),
             evaluations.qr.into_bigint().to_bytes_be(),
@@ -279,20 +263,9 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 
     let mut out = [0u8; 32];
     hasher.finalize(&mut out);
-    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, &out);
 
-    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
-    res
-}
-fn blake3_hash(bytes: Vec<u8>) -> Fr {
-    let mut hasher = blake3::Hasher::new();
-    hasher.update(&bytes);
+    let res = Fr::from_be_bytes_mod_order(&out);
 
-    let mut out = [0u8; 32];
-    let mut output_reader = hasher.finalize();
-    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
-
-    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
     res
 }
 
@@ -305,50 +278,29 @@ pub fn decimal_to_hex(decimal_str: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::mock;
-    use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
-    use crate::proof::Proof;
-    use ark_bn254::{Fq, Fr};
+
+    use ark_bn254::Fr;
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+
+    fn blake3_hash(bytes: Vec<u8>) -> Fr {
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(&bytes);
+
+        let out = [0u8; 32];
+        let output_reader = hasher.finalize();
+        let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
+
+        let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+        res
+    }
 
     pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
         let mut result = input.clone();
         let mut padding = vec![0; 32 - input.len()];
         padding.append(&mut result);
         padding
-    }
-
-    #[test]
-    fn test_compute_beta_with_blake3() {
-        let c0 = G1Affine::new(
-            Fq::from_str(
-                "7005013949998269612234996630658580519456097203281734268590713858661772481668",
-            )
-            .unwrap(),
-            Fq::from_str(
-                "869093939501355406318588453775243436758538662501260653214950591532352435323",
-            )
-            .unwrap(),
-        );
-
-        let c1 = G1Projective::new(
-            Fq::from_str(
-                "12195165594784431822497303968938621279445690754376121387655513728730220550454",
-            )
-            .unwrap(),
-            Fq::from_str(
-                "19482351300768228183728567743975524187837254971200066453308487514712354412818",
-            )
-            .unwrap(),
-            Fq::one(),
-        );
-
-        let pi = Fr::from_str(mock::MOCK_PUB_INPUT).unwrap();
-
-        let beta = Challenges::compute_beta_with_blake3(&c0, &c1, &pi);
-        println!("beta: {:?}", beta.to_string());
     }
 
     #[test]

@@ -3,6 +3,9 @@ use ark_ec::{AffineRepr, CurveGroup};
 use ark_ff::Field;
 use num_traits::One;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use std::str::FromStr;
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -35,6 +38,15 @@ pub struct SnarkJSVK {
     // C_0(x)·[1]_1
     #[serde(with = "crate::serde::g1", rename = "C0")]
     pub c0: G1Projective,
+}
+impl SnarkJSVK {
+    pub fn load<P: AsRef<Path>>(vk_path: P) -> anyhow::Result<Self> {
+        let mut file = File::open(vk_path)?;
+        let mut vk_json = String::new();
+        file.read_to_string(&mut vk_json)?;
+        let snarkjs_vk: Self = serde_json::from_str(&vk_json)?;
+        Ok(snarkjs_vk)
+    }
 }
 
 impl Default for SnarkJSVK {
