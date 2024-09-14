@@ -40,3 +40,9 @@ ark-poly = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git",  bran
 name = "fflonk_verifier_bench"
 path = "benches/bench.rs"
 harness = false
+
+
+[features]
+default = ["keccak256"]
+keccak256 = []
+blake3 = []

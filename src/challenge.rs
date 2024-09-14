@@ -176,19 +176,19 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let beta = keccak_hash(concatenated);
+        let beta = keccak_or_blake_hash(concatenated);
         beta
     }
 
     // 2. compute gamma: keccak_hash with beta
     pub fn compute_gamma(beta: &Fr) -> Fr {
         let concatenated = beta.into_bigint().to_bytes_be();
-        let gamma = keccak_hash(concatenated);
+        let gamma = keccak_or_blake_hash(concatenated);
 
         gamma
     }
 
-    //  compute xi_seed: keccak_hash with gamma,c2
+    //  compute xi_seed: keccak_or_blake_hash with gamma,c2
     pub fn compute_xiseed(gamma: &Fr, c2: G1Projective) -> Fr {
         let concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
@@ -198,7 +198,7 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let xi_seed = keccak_hash(concatenated);
+        let xi_seed = keccak_or_blake_hash(concatenated);
         xi_seed
     }
 
@@ -225,7 +225,7 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let alpha = keccak_hash(concatenated);
+        let alpha = keccak_or_blake_hash(concatenated);
         alpha
     }
 
@@ -239,7 +239,7 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let y = keccak_hash(concatenated);
+        let y = keccak_or_blake_hash(concatenated);
         y
     }
 }
@@ -254,6 +254,17 @@ impl fmt::Display for Challenges {
         write!(f, "xi_seed: {}", self.xi_seed.to_string());
         // write!(f, "xi_seed_2: {}", self.xi_seed_2.to_string());
         write!(f, "zh: {}", self.zh.to_string())
+    }
+}
+
+fn keccak_or_blake_hash(bytes: Vec<u8>) -> Fr {
+    #[cfg(feature = "keccak256")]
+    {
+        keccak_hash(bytes)
+    }
+    #[cfg(feature = "blake3")]
+    {
+        blake3_hash(bytes)
     }
 }
 
