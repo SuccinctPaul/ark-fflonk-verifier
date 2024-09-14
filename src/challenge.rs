@@ -5,7 +5,7 @@ use num_bigint::BigInt;
 use std::fmt;
 
 use crate::proof::{Evaluations, Proof};
-use ark_ec::AffineRepr;
+use ark_ec::{AffineRepr, CurveGroup};
 use std::ops::Mul;
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
@@ -122,17 +122,38 @@ impl Challenges {
     pub fn compute(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> Challenges {
         // 1. compute beta: keccak_hash with c0, pub_input, c1
         let beta = Self::compute_beta(&vk.c0, &proof.polynomials.c1, pub_input);
+        // let beta = Fr::from_str(
+        //     "11885126697260753997676299129126541171328030482525833783619390216535008076019",
+        // ).unwrap();
+        println!("beta: {:?} ", beta.to_string());
         // 2. compute gamma: keccak_hash with beta
         let gamma = Self::compute_gamma(&beta);
+        println!("gemma: {:?}", gamma.to_string());
 
         // 3. compute xi_seed: keccak_hash with gamma,c2
+        // [INFO]  snarkJS: ··· proof.evaluations.C2.x:  8790448509563967042551964851506916282541097016985874861136934771380868301300
+        // [INFO]  snarkJS: ··· proof.evaluations.C2.y:  8790448509563967042551964851506916282541097016985874861136934771380868301300
+        println!(
+            "proof.polynomials.c2.x: {:?}",
+            proof.polynomials.c2.into_affine().x.to_string()
+        );
+        println!(
+            "proof.polynomials.c2.x: {:?}",
+            proof.polynomials.c2.x.to_string()
+        );
+        println!(
+            "proof.polynomials.c2.y: {:?}",
+            proof.polynomials.c2.y.to_string()
+        );
         let xi_seed = Self::compute_xiseed(&gamma, proof.polynomials.c2);
-
+        println!("xi_seed: {:?}", xi_seed.to_string());
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
         let alpha = Self::compute_alpha(&xi_seed, &proof.evaluations);
+        println!("alpha: {:?}", alpha.to_string());
 
         // 5. compute y: keccak_hash with alpha, w1
         let y = Self::compute_y(&alpha, &proof.polynomials.w1);
+        println!("y: {:?}", y.to_string());
 
         /////////////////////////////////////////////
         // beta, gamma, xi, alpha, y
@@ -141,6 +162,7 @@ impl Challenges {
 
         // 6. compute xi=xi_seeder^24
         let xi = xi_seed.pow([24]);
+        println!("xi: {:?}", xi.to_string());
 
         // 7. Compute xin = xi^n
         let xin = xi.pow(vk.n.into_bigint());
@@ -277,14 +299,18 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 }
 
 fn blake3_hash(bytes: Vec<u8>) -> Fr {
+    // println!("Blake3 input: {:?} ", hex::encode(bytes.clone()));
+
     let mut hasher = blake3::Hasher::new();
     hasher.update(&bytes);
-    println!("heloo, blake3");
+    // println!("heloo, blake3");
     let out = [0u8; 32];
     let output_reader = hasher.finalize();
+    // println!("Blake3 out: {:?} ", hex::encode(out));
     let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
 
     let res = Fr::from_str(&res_bigint.to_string()).unwrap();
+    // println!("Blake3 out field: {:?} ", res.to_string());
     res
 }
 
@@ -354,7 +380,7 @@ mod test {
     #[test]
     fn test_blake3_gamma() {
         let beta = Fr::from_str(
-            "485596931070696584921673007746559446164232583596250406637950679013042540061",
+            "14217054809736064644780466650249611613142182608788581474253500114349716637652",
         )
         .unwrap();
 
@@ -364,11 +390,17 @@ mod test {
 
         // different hash algorithm should have different output.
         let expect = Fr::from_str(
-            "19250037324033436581569284153336383290774316882310310865823706333327285195728",
+            "18625893475371571197839289625741174101096563782277458846920976081923622001569",
         )
         .unwrap();
+        // 14492412223297911893960987875896571725330441878463898090786262955691738278152
+        println!("expect: {:?}", expect.to_string());
 
         assert_eq!(actual, expect);
+
+        let gamma = Challenges::compute_gamma(&beta);
+        println!("gamma: {:?}", gamma.to_string());
+        assert_eq!(gamma, expect);
     }
 
     #[test]
