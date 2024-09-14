@@ -4,7 +4,6 @@ use ark_ff::Field;
 use num_traits::One;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io;
 use std::io::Read;
 use std::path::Path;
 use std::str::FromStr;

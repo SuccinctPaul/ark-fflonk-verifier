@@ -1,4 +1,3 @@
-use crate::vk::SnarkJSVK;
 use ark_bn254::{Fq, Fr, G1Projective};
 use ark_ff::One;
 use serde::{Deserialize, Serialize};

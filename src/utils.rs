@@ -1,7 +1,6 @@
 use crate::challenge::Challenges;
 use crate::compute_fej::FEJ;
 use crate::proof::Proof;
-use crate::vk::SnarkJSVK;
 use ark_bn254::{Fr, G1Affine};
 use ark_ec::CurveGroup;
 use num_traits::{One, Zero};

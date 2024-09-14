@@ -1,12 +1,10 @@
 use crate::challenge::Challenges;
 use crate::inversion::Inversion;
-use crate::proof::{Evaluations, Proof};
+use crate::proof::{Proof};
 use crate::utils::polynomial_eval;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
-use ark_ff::{Field, One, Zero};
-use std::ops::{Add, Mul, Sub};
-use std::str::FromStr;
+use ark_ff::{Field, One};
 
 pub fn compute_r(
     vk: &VerificationKey,

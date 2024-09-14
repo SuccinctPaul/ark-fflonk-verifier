@@ -29,7 +29,7 @@ pub fn fflonk_verifier(
 
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
-    let mut inv_tuple = Inversion::build(vk, proof, &challenges);
+    let inv_tuple = Inversion::build(vk, proof, &challenges);
 
     // 3. compute lagrange of L_1
     let L_1 = compute_lagrange(&challenges.zh, &inv_tuple.eval_l1);
