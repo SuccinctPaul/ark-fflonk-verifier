@@ -3,7 +3,6 @@ use ark_fflonk_verifier::utils::load_public_input;
 use ark_fflonk_verifier::verifier::fflonk_verifier;
 use ark_fflonk_verifier::vk::{SnarkJSVK, VerificationKey};
 
-
 #[test]
 fn circom_fflonk_proof_verifier() {
     let current_dir = std::env::current_dir().unwrap();

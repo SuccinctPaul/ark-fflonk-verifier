@@ -1,6 +1,6 @@
 use crate::challenge::Challenges;
 use crate::inversion::Inversion;
-use crate::proof::{Proof};
+use crate::proof::Proof;
 use crate::utils::polynomial_eval;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
