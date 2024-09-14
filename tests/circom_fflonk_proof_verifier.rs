@@ -21,7 +21,8 @@ fn circom_fflonk_proof_verifier() {
     println!("proof.inv:{:?}", proof.evaluations.inv.to_string());
     let pubs = load_public_input(public_file).unwrap();
     println!("snarkjs_vk: {:?}", pubs);
-    let res = fflonk_verifier(&vk, &proof, &pubs, true);
+    let res = fflonk_verifier(&vk, &proof, &pubs, false);
     println!("res: {res}");
     assert!(res);
+    assert!(fflonk_verifier(&vk, &proof, &pubs, true));
 }
