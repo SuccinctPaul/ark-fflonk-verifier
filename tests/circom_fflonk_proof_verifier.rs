@@ -6,6 +6,10 @@ use ark_fflonk_verifier::vk::{SnarkJSVK, VerificationKey};
 #[test]
 fn circom_fflonk_proof_verifier() {
     let current_dir = std::env::current_dir().unwrap();
+
+    #[cfg(feature = "blake3")]
+    let circom_file_path = current_dir.join("resources/circom-blake3/");
+    #[cfg(feature = "keccak256")]
     let circom_file_path = current_dir.join("resources/circom/");
 
     let public_file = circom_file_path.join("public.json");
@@ -17,5 +21,7 @@ fn circom_fflonk_proof_verifier() {
     let proof = Proof::load(proof_file).unwrap();
     let pubs = load_public_input(public_file).unwrap();
     println!("snarkjs_vk: {:?}", pubs);
-    fflonk_verifier(&vk, &proof, &pubs, false);
+    let res = fflonk_verifier(&vk, &proof, &pubs, true);
+    println!("res: {res}");
+    assert!(res);
 }

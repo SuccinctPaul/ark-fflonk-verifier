@@ -122,7 +122,6 @@ impl Challenges {
     pub fn compute(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> Challenges {
         // 1. compute beta: keccak_hash with c0, pub_input, c1
         let beta = Self::compute_beta(&vk.c0, &proof.polynomials.c1, pub_input);
-
         // 2. compute gamma: keccak_hash with beta
         let gamma = Self::compute_gamma(&beta);
 
@@ -136,6 +135,7 @@ impl Challenges {
         let y = Self::compute_y(&alpha, &proof.polynomials.w1);
 
         /////////////////////////////////////////////
+        // beta, gamma, xi, alpha, y
         //////////// Above is keccak hash
         /////////////////////////////////////////////
 
@@ -188,7 +188,7 @@ impl Challenges {
         gamma
     }
 
-    //  compute xi_seed: keccak_or_blake_hash with gamma,c2
+    //  compute xi_seed: hash with gamma,c2
     pub fn compute_xiseed(gamma: &Fr, c2: G1Projective) -> Fr {
         let concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
@@ -259,13 +259,9 @@ impl fmt::Display for Challenges {
 
 fn keccak_or_blake_hash(bytes: Vec<u8>) -> Fr {
     #[cfg(feature = "keccak256")]
-    {
-        keccak_hash(bytes)
-    }
+    return keccak_hash(bytes);
     #[cfg(feature = "blake3")]
-    {
-        blake3_hash(bytes)
-    }
+    return blake3_hash(bytes);
 }
 
 fn keccak_hash(bytes: Vec<u8>) -> Fr {
@@ -277,6 +273,18 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 
     let res = Fr::from_be_bytes_mod_order(&out);
 
+    res
+}
+
+fn blake3_hash(bytes: Vec<u8>) -> Fr {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(&bytes);
+    println!("heloo, blake3");
+    let out = [0u8; 32];
+    let output_reader = hasher.finalize();
+    let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
+
+    let res = Fr::from_str(&res_bigint.to_string()).unwrap();
     res
 }
 
@@ -294,18 +302,6 @@ mod test {
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
-
-    fn blake3_hash(bytes: Vec<u8>) -> Fr {
-        let mut hasher = blake3::Hasher::new();
-        hasher.update(&bytes);
-
-        let out = [0u8; 32];
-        let output_reader = hasher.finalize();
-        let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
-
-        let res = Fr::from_str(&res_bigint.to_string()).unwrap();
-        res
-    }
 
     pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
         let mut result = input.clone();
@@ -356,18 +352,23 @@ mod test {
     }
 
     #[test]
-    fn test_keccak_and_blake3() {
+    fn test_blake3_gamma() {
         let beta = Fr::from_str(
-            "14516932981781041565586298118536599721399535462624815668597272732223874827152",
+            "485596931070696584921673007746559446164232583596250406637950679013042540061",
         )
         .unwrap();
+
         let bytes = beta.into_bigint().to_bytes_be();
 
-        let f_k = keccak_hash(bytes.clone());
-        let f_b = blake3_hash(bytes.clone());
+        let actual = blake3_hash(bytes.clone());
 
         // different hash algorithm should have different output.
-        assert_ne!(f_k, f_b);
+        let expect = Fr::from_str(
+            "19250037324033436581569284153336383290774316882310310865823706333327285195728",
+        )
+        .unwrap();
+
+        assert_eq!(actual, expect);
     }
 
     #[test]
