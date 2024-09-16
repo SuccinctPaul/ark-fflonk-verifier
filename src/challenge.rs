@@ -5,7 +5,7 @@ use num_bigint::BigInt;
 use std::fmt;
 
 use crate::proof::{Evaluations, Proof};
-use ark_ec::{AffineRepr, CurveGroup};
+use ark_ec::AffineRepr;
 use std::ops::Mul;
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
