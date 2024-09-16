@@ -18,11 +18,9 @@ fn circom_fflonk_proof_verifier() {
     let snarkjs_vk = SnarkJSVK::load(vk_file).unwrap();
     let vk: VerificationKey = snarkjs_vk.into();
     let proof = Proof::load(proof_file).unwrap();
-    println!("proof.inv:{:?}", proof.evaluations.inv.to_string());
     let pubs = load_public_input(public_file).unwrap();
-    println!("snarkjs_vk: {:?}", pubs);
     let res = fflonk_verifier(&vk, &proof, &pubs, false);
-    println!("res: {res}");
+    println!("circom_fflonk_proof_verifier res: {res}");
     assert!(res);
     // assert!(fflonk_verifier(&vk, &proof, &pubs, true));
 }
