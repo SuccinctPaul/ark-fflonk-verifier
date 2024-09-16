@@ -1,7 +1,5 @@
 use ark_bn254::Fr;
 use ark_ff::PrimeField;
-use num_bigint::BigInt;
-use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
 
 pub trait TranscriptHash {

@@ -1,6 +1,7 @@
 use ark_bn254::Fr;
 use ark_fflonk_verifier::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
 use ark_fflonk_verifier::proof::Proof;
+use ark_fflonk_verifier::transcript::Keccak256TranscriptHash;
 use ark_fflonk_verifier::verifier::fflonk_verifier;
 use ark_fflonk_verifier::vk::VerificationKey;
 use criterion::{criterion_group, criterion_main, Criterion};
@@ -14,10 +15,10 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let vk = VerificationKey::default();
 
     c.bench_function("fflonk_verifier_without_recursive_verifier", |b| {
-        b.iter(|| fflonk_verifier(&vk, &proof, &pub_input, false))
+        b.iter(|| fflonk_verifier::<Keccak256TranscriptHash>(&vk, &proof, &pub_input, false))
     });
     c.bench_function("fflonk_verifier_with_recursive_verifier", |b| {
-        b.iter(|| fflonk_verifier(&vk, &proof, &pub_input, true))
+        b.iter(|| fflonk_verifier::<Keccak256TranscriptHash>(&vk, &proof, &pub_input, true))
     });
 }
 

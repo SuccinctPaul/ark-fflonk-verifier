@@ -10,9 +10,7 @@ use crate::challenge::root::Roots;
 use crate::proof::{Evaluations, Proof};
 use crate::transcript::TranscriptHash;
 use ark_ec::AffineRepr;
-use std::ops::Mul;
 use std::str::FromStr;
-use tiny_keccak::{Hasher, Keccak};
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Challenges {
@@ -177,6 +175,7 @@ mod test {
     use ark_ff::{BigInteger, PrimeField};
     use num_bigint::{BigInt, BigUint};
     use std::str::FromStr;
+    use tiny_keccak::{Hasher, Keccak};
 
     fn keccak_hash(bytes: Vec<u8>) -> Fr {
         println!("keccak_hash ");

@@ -1,13 +1,8 @@
-use ark_bn254::{Fr, G1Affine, G1Projective};
-use ark_ff::{BigInteger, Field, One, PrimeField};
-use num_bigint::BigInt;
+use ark_bn254::Fr;
 use std::fmt;
 
-use crate::proof::{Evaluations, Proof};
 use crate::vk::VerificationKey;
-use ark_ec::AffineRepr;
 use std::ops::Mul;
-use std::str::FromStr;
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Roots {
