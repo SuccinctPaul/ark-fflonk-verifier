@@ -190,11 +190,9 @@ impl Challenges {
     pub fn compute_beta(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
         let concatenated = vec![
             c0.x.into_bigint().to_bytes_be(),
-            #[cfg(feature = "keccak256")]
             c0.y.into_bigint().to_bytes_be(),
             pub_input.into_bigint().to_bytes_be(),
             c1.x.into_bigint().to_bytes_be(),
-            #[cfg(feature = "keccak256")]
             c1.y.into_bigint().to_bytes_be(),
         ]
         .into_iter()
