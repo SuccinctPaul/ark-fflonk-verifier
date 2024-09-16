@@ -1,4 +1,4 @@
-use crate::challenge::{Challenges, Roots};
+use crate::challenge::{root::Roots, Challenges};
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
