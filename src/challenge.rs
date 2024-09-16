@@ -190,9 +190,11 @@ impl Challenges {
     pub fn compute_beta(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
         let concatenated = vec![
             c0.x.into_bigint().to_bytes_be(),
+            #[cfg(feature = "keccak256")]
             c0.y.into_bigint().to_bytes_be(),
             pub_input.into_bigint().to_bytes_be(),
             c1.x.into_bigint().to_bytes_be(),
+            #[cfg(feature = "keccak256")]
             c1.y.into_bigint().to_bytes_be(),
         ]
         .into_iter()
@@ -215,6 +217,7 @@ impl Challenges {
         let concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
             c2.x.into_bigint().to_bytes_be(),
+            // #[cfg(feature = "keccak256")]
             c2.y.into_bigint().to_bytes_be(),
         ]
         .into_iter()
@@ -300,6 +303,8 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 
 fn blake3_hash(bytes: Vec<u8>) -> Fr {
     // println!("Blake3 input: {:?} ", hex::encode(bytes.clone()));
+    let hex_bytes = hex::encode(bytes.clone());
+    println!("\n blake3_hash_input:{:?}", hex_bytes);
 
     let mut hasher = blake3::Hasher::new();
     hasher.update(&bytes);
