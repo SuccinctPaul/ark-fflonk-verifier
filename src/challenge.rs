@@ -264,6 +264,7 @@ fn keccak_or_blake_hash(bytes: Vec<u8>) -> Fr {
 }
 
 fn keccak_hash(bytes: Vec<u8>) -> Fr {
+    println!("keccak_hash ");
     let mut hasher = Keccak::v256();
     hasher.update(&bytes);
 
@@ -276,8 +277,7 @@ fn keccak_hash(bytes: Vec<u8>) -> Fr {
 }
 
 fn blake3_hash(bytes: Vec<u8>) -> Fr {
-    // println!("Blake3 input: {:?} ", hex::encode(bytes.clone()));
-    let hex_bytes = hex::encode(bytes.clone());
+    println!("blake3_hash ");
 
     let mut hasher = blake3::Hasher::new();
     hasher.update(&bytes);
