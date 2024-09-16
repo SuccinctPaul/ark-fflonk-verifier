@@ -44,6 +44,6 @@ harness = false
 
 
 [features]
-default = ["keccak256"]
+default = ["blake3"]
 keccak256 = []
 blake3 = []
