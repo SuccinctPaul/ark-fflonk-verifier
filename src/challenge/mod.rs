@@ -18,7 +18,6 @@ pub struct Challenges {
     pub beta: Fr,
     pub gamma: Fr,
     pub y: Fr,
-    pub xi_seed: Fr,
     pub xi: Fr,
     pub zh: Fr,
     pub roots: Roots,
@@ -59,7 +58,6 @@ impl Challenges {
             beta,
             gamma,
             y,
-            xi_seed,
             xi,
             zh,
             roots: Roots::compute(&vk, &xi_seed),
@@ -154,8 +152,6 @@ impl fmt::Display for Challenges {
         write!(f, "gamma: {}", self.gamma.to_string());
         write!(f, "y: {}", self.y.to_string());
         write!(f, "xi: {}", self.xi.to_string());
-        write!(f, "xi_seed: {}", self.xi_seed.to_string());
-        // write!(f, "xi_seed_2: {}", self.xi_seed_2.to_string());
         write!(f, "zh: {}", self.zh.to_string())
     }
 }
