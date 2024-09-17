@@ -9,7 +9,7 @@ use std::fmt;
 use crate::challenge::root::Roots;
 use crate::proof::{Evaluations, Proof};
 use crate::transcript::TranscriptHash;
-use ark_ec::AffineRepr;
+use ark_ec::{AffineRepr, CurveGroup};
 use std::str::FromStr;
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
@@ -27,17 +27,17 @@ impl Challenges {
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
     pub fn compute<T: TranscriptHash>(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> Self {
         // 1. compute beta: keccak_hash with c0, pub_input, c1
-        let beta = Self::compute_beta::<T>(&vk.c0, &proof.polynomials.c1, pub_input);
+        let beta = Self::compute_beta::<T>(&vk.c0, &proof.polynomials.c1.into_affine(), pub_input);
         // 2. compute gamma: keccak_hash with beta
         let gamma = Self::compute_gamma::<T>(&beta);
 
         // 3. compute xi_seed: keccak_hash with gamma,c2
-        let xi_seed = Self::compute_xiseed::<T>(&gamma, proof.polynomials.c2);
+        let xi_seed = Self::compute_xiseed::<T>(&gamma, proof.polynomials.c2.into_affine());
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
         let alpha = Self::compute_alpha::<T>(&xi_seed, &proof.evaluations);
 
         // 5. compute y: keccak_hash with alpha, w1
-        let y = Self::compute_y::<T>(&alpha, &proof.polynomials.w1);
+        let y = Self::compute_y::<T>(&alpha, &proof.polynomials.w1.into_affine());
 
         /////////////////////////////////////////////
         // beta, gamma, xi, alpha, y
@@ -66,7 +66,7 @@ impl Challenges {
     }
 
     // compute beta: keccak_hash with c0, pub_input, c1
-    pub fn compute_beta<T: TranscriptHash>(c0: &G1Affine, c1: &G1Projective, pub_input: &Fr) -> Fr {
+    pub fn compute_beta<T: TranscriptHash>(c0: &G1Affine, c1: &G1Affine, pub_input: &Fr) -> Fr {
         let concatenated = vec![
             c0.x.into_bigint().to_bytes_be(),
             c0.y.into_bigint().to_bytes_be(),
@@ -90,7 +90,7 @@ impl Challenges {
     }
 
     //  compute xi_seed: hash with gamma,c2
-    pub fn compute_xiseed<T: TranscriptHash>(gamma: &Fr, c2: G1Projective) -> Fr {
+    pub fn compute_xiseed<T: TranscriptHash>(gamma: &Fr, c2: G1Affine) -> Fr {
         let concatenated = vec![
             gamma.into_bigint().to_bytes_be(),
             c2.x.into_bigint().to_bytes_be(),
@@ -131,7 +131,7 @@ impl Challenges {
     }
 
     // compute y: keccak_hash with alpha, w1
-    pub fn compute_y<T: TranscriptHash>(alpha: &Fr, w1: &G1Projective) -> Fr {
+    pub fn compute_y<T: TranscriptHash>(alpha: &Fr, w1: &G1Affine) -> Fr {
         let concatenated = vec![
             alpha.into_bigint().to_bytes_be(),
             w1.x.into_bigint().to_bytes_be(),

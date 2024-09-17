@@ -5,11 +5,7 @@ use ark_fflonk_verifier::verifier::fflonk_verifier;
 use ark_fflonk_verifier::vk::{SnarkJSVK, VerificationKey};
 use ark_std::{end_timer, start_timer};
 
-// keccak256:
-//      cargo test circom_fflonk_proof_verifier  --features keccak256 -- --nocapture
-//
-// blake3:
-//      cargo test circom_fflonk_proof_verifier --features blake3 --no-default-features  -- --nocapture
+// cargo test circom_fflonk_proof_verifier  -- --nocapture
 #[test]
 fn circom_fflonk_proof_verifier() {
     circom_fflonk_proof_verifier_keccak256();
