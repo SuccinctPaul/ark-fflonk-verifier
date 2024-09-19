@@ -9,7 +9,7 @@ use std::fmt;
 use crate::challenge::root::Roots;
 use crate::proof::{Evaluations, Proof};
 use crate::transcript::TranscriptHash;
-use ark_ec::{AffineRepr, CurveGroup};
+use ark_ec::CurveGroup;
 use std::str::FromStr;
 
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
@@ -53,16 +53,15 @@ impl Challenges {
         // 8. zh = xin - 1
         let zh = xin - Fr::one();
 
-        let challenges = Challenges {
+        Challenges {
             alpha,
             beta,
             gamma,
             y,
             xi,
             zh,
-            roots: Roots::compute(&vk, &xi_seed),
-        };
-        challenges
+            roots: Roots::compute(vk, &xi_seed),
+        }
     }
 
     // compute beta: keccak_hash with c0, pub_input, c1
@@ -77,16 +76,13 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let beta = T::hash_to_fr(concatenated);
-        beta
+        T::hash_to_fr(concatenated)
     }
 
     // 2. compute gamma: keccak_hash with beta
     pub fn compute_gamma<T: TranscriptHash>(beta: &Fr) -> Fr {
         let concatenated = beta.into_bigint().to_bytes_be();
-        let gamma = T::hash_to_fr(concatenated);
-
-        gamma
+        T::hash_to_fr(concatenated)
     }
 
     //  compute xi_seed: hash with gamma,c2
@@ -99,8 +95,7 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let xi_seed = T::hash_to_fr(concatenated);
-        xi_seed
+        T::hash_to_fr(concatenated)
     }
 
     // compute alpha: keccak_hash with xi_seed, eval_lines
@@ -126,8 +121,7 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let alpha = T::hash_to_fr(concatenated);
-        alpha
+        T::hash_to_fr(concatenated)
     }
 
     // compute y: keccak_hash with alpha, w1
@@ -140,18 +134,18 @@ impl Challenges {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let y = T::hash_to_fr(concatenated);
-        y
+        T::hash_to_fr(concatenated)
     }
 }
 
+#[allow(clippy::to_string_in_format_args)]
 impl fmt::Display for Challenges {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "alpha: {:?}", self.alpha.to_string());
-        write!(f, "beta: {}", self.beta.to_string());
-        write!(f, "gamma: {}", self.gamma.to_string());
-        write!(f, "y: {}", self.y.to_string());
-        write!(f, "xi: {}", self.xi.to_string());
+        write!(f, "alpha: {:?}", self.alpha.to_string())?;
+        write!(f, "beta: {}", self.beta.to_string())?;
+        write!(f, "gamma: {}", self.gamma.to_string())?;
+        write!(f, "y: {}", self.y.to_string())?;
+        write!(f, "xi: {}", self.xi.to_string())?;
         write!(f, "zh: {}", self.zh.to_string())
     }
 }

@@ -19,7 +19,7 @@ pub fn compute_lagrange(zh: &Fr, Li_inv: &Fr) -> Fr {
 
 // Compute public input polynomial evaluation `PI(xi)`:
 // $PI(xi) = -\sum_i^l PublicInput_i·L_i(xi)$
-pub fn compute_pi(pub_inputs: &Vec<Fr>, eval_ls: &Vec<Fr>) -> Fr {
+pub fn compute_pi(pub_inputs: &[Fr], eval_ls: &[Fr]) -> Fr {
     pub_inputs
         .iter()
         .zip(eval_ls.iter())
@@ -34,8 +34,7 @@ pub fn compute_a1(proof: &Proof, fej: &FEJ, challenges: &Challenges) -> G1Affine
     let W2 = proof.polynomials.w2;
 
     // F = F - E - J + y·W2
-    let a1 = (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine();
-    a1
+    (fej.F - fej.E - fej.J + W2 * challenges.y).into_affine()
 }
 
 pub fn polynomial_eval(
@@ -50,10 +49,10 @@ pub fn polynomial_eval(
         let mut h = Fr::one();
         let mut c1_value = Fr::zero();
         for c in coefficients {
-            c1_value = c1_value + (*c) * h;
-            h = h * *root;
+            c1_value += (*c) * h;
+            h *= *root
         }
-        acc = acc + c1_value * base * inv[i];
+        acc += c1_value * base * inv[i]
     }
     acc
 }

@@ -17,9 +17,7 @@ impl TranscriptHash for Keccak256TranscriptHash {
         let mut out = [0u8; 32];
         hasher.finalize(&mut out);
 
-        let res = Fr::from_be_bytes_mod_order(&out);
-
-        res
+        Fr::from_be_bytes_mod_order(&out)
     }
 }
 

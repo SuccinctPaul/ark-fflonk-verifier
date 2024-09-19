@@ -56,44 +56,45 @@ impl Roots {
     }
 }
 
+#[allow(clippy::to_string_in_format_args)]
 impl fmt::Display for Roots {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Roots: [")?;
-        write!(f, "h0w8:[");
+        write!(f, "h0w8:[")?;
         for (i, v) in self.h0w8.iter().enumerate() {
             if i != 0 {
                 write!(f, ", ")?;
             }
             write!(f, "{}", v.to_string())?;
         }
-        write!(f, "], ");
+        write!(f, "], ")?;
 
-        write!(f, "h1w4:[");
+        write!(f, "h1w4:[")?;
         for (i, v) in self.h1w4.iter().enumerate() {
             if i != 0 {
                 write!(f, ", ")?;
             }
             write!(f, "{}", v.to_string())?;
         }
-        write!(f, "], ");
+        write!(f, "], ")?;
 
-        write!(f, "h2w3:[");
+        write!(f, "h2w3:[")?;
         for (i, v) in self.h2w3.iter().enumerate() {
             if i != 0 {
                 write!(f, ", ")?;
             }
             write!(f, "{}", v.to_string())?;
         }
-        write!(f, "], ");
+        write!(f, "], ")?;
 
-        write!(f, "h3w3:[");
+        write!(f, "h3w3:[")?;
         for (i, v) in self.h3w3.iter().enumerate() {
             if i != 0 {
                 write!(f, ", ")?;
             }
             write!(f, "{}", v.to_string())?;
         }
-        write!(f, "] ");
+        write!(f, "] ")?;
 
         write!(f, "]")
     }

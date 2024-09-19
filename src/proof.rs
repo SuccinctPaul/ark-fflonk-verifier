@@ -92,12 +92,7 @@ impl Proof {
         let w2_y = Fq::from_str(proof_values[7]).unwrap();
         let w2 = G1Projective::new(w2_x, w2_y, Fq::one());
 
-        let polynomials = Polynomials {
-            c1: c1,
-            c2: c2,
-            w1: w1,
-            w2: w2,
-        };
+        let polynomials = Polynomials { c1, c2, w1, w2 };
         let evaluations = Evaluations {
             ql: Fr::from_str(proof_values[8]).unwrap(),
             qr: Fr::from_str(proof_values[9]).unwrap(),

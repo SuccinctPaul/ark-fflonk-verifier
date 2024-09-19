@@ -14,9 +14,9 @@ pub fn compute_r(
     L_1: &Fr,
     pi: &Fr,
 ) -> (Fr, Fr, Fr) {
-    let R0 = calculateR0(&proof, challenges, inversion.lis_values.li_s0_inv);
+    let R0 = calculateR0(proof, challenges, inversion.lis_values.li_s0_inv);
     let R1 = calculateR1(
-        &proof,
+        proof,
         challenges,
         pi,
         inversion.lis_values.li_s1_inv,
