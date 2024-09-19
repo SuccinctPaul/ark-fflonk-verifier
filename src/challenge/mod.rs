@@ -161,10 +161,7 @@ mod test {
     use super::*;
 
     use crate::transcript::Blake3TranscriptHash;
-    use ark_bn254::Fr;
-    use ark_ff::{BigInteger, PrimeField};
-    use num_bigint::{BigInt, BigUint};
-    use std::str::FromStr;
+    use num_bigint::BigUint;
     use tiny_keccak::{Hasher, Keccak};
 
     fn keccak_hash(bytes: Vec<u8>) -> Fr {
@@ -175,9 +172,7 @@ mod test {
         let mut out = [0u8; 32];
         hasher.finalize(&mut out);
 
-        let res = Fr::from_be_bytes_mod_order(&out);
-
-        res
+        Fr::from_be_bytes_mod_order(&out)
     }
 
     fn blake3_hash(bytes: Vec<u8>) -> Fr {
@@ -188,8 +183,7 @@ mod test {
         let output_reader = hasher.finalize();
         let res_bigint = BigInt::from_bytes_be(num_bigint::Sign::Plus, output_reader.as_bytes());
 
-        let res = Fr::from_str(&res_bigint.to_string()).unwrap();
-        res
+        Fr::from_str(&res_bigint.to_string()).unwrap()
     }
 
     pub fn padd_bytes32(input: Vec<u8>) -> Vec<u8> {
@@ -222,7 +216,6 @@ mod test {
         concatenated.extend_from_slice(&padd_bytes32(val6.1));
         let actual_gamma = keccak_hash(concatenated);
 
-        println!("");
         let expect_pre_bytes = "20184AFB0D281C14053177E751B3EB51201D07C072500460B4E511D80F908390"
             .trim_start_matches("0x")
             .as_bytes();
@@ -293,7 +286,6 @@ mod test {
         println!("expect_bigint: {:?}", expect_bigint);
 
         // second
-        println!("");
         let pubSignalBigInt = BigUint::from_str(
             "14516932981781041565586298118536599721399535462624815668597272732223874827152",
         )
@@ -316,7 +308,6 @@ mod test {
         let actual = padd_bytes32(actual_bytes);
         println!("fr actual_padd_bytes: {:?}", actual);
 
-        println!("");
         let sig_biguint: BigUint = pub_sig.into();
         let actual_biguint_bytes = sig_biguint.to_bytes_be();
         println!("actual_biguint_bytes: {:?}", actual_biguint_bytes);

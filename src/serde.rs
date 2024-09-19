@@ -259,16 +259,6 @@ mod test {
     }
 
     #[test]
-    fn serialize_and_deserialize_default_snarkjs_vk() {
-        let vk = SnarkJSVK::default();
-        let json = serde_json::to_string(&vk).unwrap();
-        println!("vk: {:?}", vk);
-        // let other = serde_json::from_str(&json).unwrap();
-        //
-        // assert_eq!(vk, other);
-    }
-
-    #[test]
     fn serialize_and_deserialize_fr_g1_g2() {
         let expect_fq2 = super::fq2::Fq2Serde(Fq::one(), Fq::one());
 

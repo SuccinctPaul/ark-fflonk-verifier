@@ -7,6 +7,7 @@ pub mod mock;
 pub mod pairing;
 pub mod proof;
 pub(crate) mod serde;
+#[cfg(test)]
 pub mod test;
 pub mod transcript;
 pub mod utils;
