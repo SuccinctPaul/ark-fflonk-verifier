@@ -1,34 +1,32 @@
-#[cfg(test)]
-mod test {
+use std::str::FromStr;
 
-    use std::str::FromStr;
+use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
+use crate::proof::Proof;
+use crate::transcript::Keccak256TranscriptHash;
+use crate::verifier::fflonk_verifier;
+use crate::vk::{SnarkJSVK, VerificationKey};
+use ark_bn254::Fr;
 
-    use crate::mock::{MOCK_PROOF_DATA, MOCK_PUB_INPUT};
-    use crate::proof::Proof;
-    use crate::verifier::fflonk_verifier;
-    use crate::vk::{SnarkJSVK, VerificationKey};
-    use ark_bn254::Fr;
+#[test]
+fn test_fflonk_verifier() {
+    let pub_input = Fr::from_str(MOCK_PUB_INPUT).unwrap();
 
-    #[test]
-    fn test_fflonk_verifier() {
-        let pub_input = Fr::from_str(MOCK_PUB_INPUT).unwrap();
+    let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
 
-        let proof = Proof::construct(MOCK_PROOF_DATA.to_vec());
+    let vk = VerificationKey::default();
+    assert!(
+        fflonk_verifier::<Keccak256TranscriptHash>(&vk, &proof, &pub_input, false),
+        "Proof verification failed!(is_recursive_verifier=false)"
+    );
+    assert!(
+        fflonk_verifier::<Keccak256TranscriptHash>(&vk, &proof, &pub_input, true),
+        "Proof verification failed!(is_recursive_verifier=true)"
+    );
+}
 
-        let vk = VerificationKey::default();
-        assert!(
-            fflonk_verifier(&vk, &proof, &pub_input, false),
-            "Proof verification failed!(is_recursive_verifier=false)"
-        );
-        assert!(
-            fflonk_verifier(&vk, &proof, &pub_input, true),
-            "Proof verification failed!(is_recursive_verifier=true)"
-        );
-    }
-
-    #[test]
-    fn test_verify_snarkjs_fflonk_proof() {
-        let proof: Proof = serde_json::from_str(r#"
+#[test]
+fn test_verify_snarkjs_fflonk_proof() {
+    let proof: Proof = serde_json::from_str(r#"
         {
             "protocol": "fflonk",
             "curve": "bn128",
@@ -74,8 +72,8 @@ mod test {
             }
         }
         "#).unwrap();
-        let snarkjs_vk: SnarkJSVK = serde_json::from_str(
-            r#"
+    let snarkjs_vk: SnarkJSVK = serde_json::from_str(
+        r#"
         {
             "protocol": "fflonk",
             "curve": "bn128",
@@ -109,14 +107,13 @@ mod test {
             ]
         }
         "#,
-        )
-        .unwrap();
-        let vk = snarkjs_vk.into();
-        let pubs = Fr::from_str(
-            "7713112592372404476342535432037683616424591277138491596200192981572885523208",
-        )
-        .unwrap();
+    )
+    .unwrap();
+    let vk = snarkjs_vk.into();
+    let pubs = Fr::from_str(
+        "7713112592372404476342535432037683616424591277138491596200192981572885523208",
+    )
+    .unwrap();
 
-        fflonk_verifier(&vk, &proof, &pubs, false);
-    }
+    fflonk_verifier::<Keccak256TranscriptHash>(&vk, &proof, &pubs, false);
 }

@@ -1,4 +1,4 @@
-use crate::challenge::{Challenges, Roots};
+use crate::challenge::{root::Roots, Challenges};
 use crate::proof::Proof;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
@@ -59,9 +59,9 @@ impl Inversion {
         let (y, xi, zh) = (challenges.y, challenges.xi, challenges.zh);
 
         // 1. compute den_h1_base
-        let den_h1_base = Self::compute_den_h1_base(&roots, &y);
+        let den_h1_base = Self::compute_den_h1_base(roots, &y);
         // 1. compute den_h2_base
-        let den_h2_base = Self::compute_den_h2_base(&roots, &y);
+        let den_h2_base = Self::compute_den_h2_base(roots, &y);
 
         let li_s0 = Self::compute_li_s0(y, &roots.h0w8);
 
@@ -81,6 +81,7 @@ impl Inversion {
             &li_s2,
             &eval_l1_base,
         );
+
         assert_eq!(eval_l1_base * res.eval_l1, Fr::one());
 
         res
@@ -148,39 +149,39 @@ impl Inversion {
         eval_l1: &Fr,
     ) -> Vec<Fr> {
         let mut accumulator: Vec<Fr> = Vec::new();
-        accumulator.push(zh.clone());
+        accumulator.push(*zh);
 
         // acc = zh*den_h1
         let mut acc = zh.mul(den_h1_base);
-        accumulator.push(acc.clone());
+        accumulator.push(acc);
 
         // acc = zh*den_h1*den_h2
-        acc = acc.mul(den_h2_base);
-        accumulator.push(acc.clone());
+        acc *= den_h2_base;
+        accumulator.push(acc);
 
         // acc = zh*den_h1*den_h2 * MUL(li_s0[i])
-        for i in 0..8 {
-            acc = acc * li_s0[i];
+        for li_s0_i in li_s0 {
+            acc *= li_s0_i;
             accumulator.push(acc);
         }
         // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i])
-        for i in 0..4 {
-            acc = acc * li_s1[i];
+        for li_s1_i in li_s1 {
+            acc *= li_s1_i;
             accumulator.push(acc);
         }
         // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])
-        for i in 0..6 {
-            acc = acc * li_s2[i];
+        for li_s2_i in li_s2 {
+            acc *= li_s2_i;
             accumulator.push(acc);
         }
 
         // acc = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1
-        acc = acc * eval_l1.clone();
+        acc *= *eval_l1;
         accumulator.push(acc);
         accumulator
     }
 
-    pub fn check_accumulator(accumulator: &Vec<Fr>, proof: &Proof) {
+    pub fn check_accumulator(accumulator: &[Fr], proof: &Proof) {
         // check `zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])* eval_l1 * proof.inv = 1`
         assert_eq!(
             accumulator.last().unwrap() * &proof.evaluations.inv,
@@ -197,6 +198,8 @@ impl Inversion {
     //      [11..14]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])
     //      [15..20]=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
     //      eval_l1_inv=zh*den_h1_base*den_h2_base*MUL(li_s0[i])*MUL(li_s1[i])*MUL(li_s2[i])
+    #[allow(clippy::too_many_arguments)]
+    #[allow(unused_assignments)]
     pub fn inverse_with_accumulator(
         accumulator: &mut Vec<Fr>,
         proof: &Proof,
@@ -219,7 +222,7 @@ impl Inversion {
         //      eval_l1_inv
         //          = eval_l1.inverse()
         //          = zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i]) * proof.inv
-
+        //
         // inv = proof.inv
         let mut inv = proof.evaluations.inv;
         // acc = proof.inv
@@ -228,9 +231,11 @@ impl Inversion {
         // inv = proof.inv * zh*den_h1*den_h2 * MUL(li_s0[i]) * MUL(li_s1[i]) * MUL(li_s2[i])=eval_inv
         inv = acc * accumulator.pop().unwrap();
         // acc = inv*eval
-        acc = acc.mul(eval_l1_base.clone());
+        acc = acc.mul(*eval_l1_base);
         let eval_l1_inv = inv;
+
         assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
+
         let mut local_li_s2_inv = [Fr::zero(); 6];
 
         for i in (0..6).rev() {
@@ -257,15 +262,12 @@ impl Inversion {
         inv = acc * accumulator.pop().unwrap();
         acc = acc.mul(den_h2_base);
         let local_den_h2 = inv;
-        assert_eq!(local_den_h2, den_h2_base.inverse().unwrap());
 
         inv = acc * accumulator.pop().unwrap();
         acc = acc.mul(den_h1_base);
         let local_den_h1 = inv;
-        assert_eq!(local_den_h1, den_h1_base.inverse().unwrap());
 
         let Z_H = acc;
-        assert_eq!(Z_H, zh.inverse().unwrap());
 
         let lis_values = LISValues {
             li_s0_inv: local_li_s0_inv,
@@ -290,6 +292,7 @@ impl Inversion {
     // Computes the inverse of an array of values
     // See https://vitalik.ca/general/2018/07/21/starks_part_3.html in section where explain fields operations
     // To save the inverse to be computed on chain the prover sends the inverse as an evaluation in commits.eval_inv
+    #[allow(clippy::too_many_arguments)]
     pub fn inverse_array(
         proof: &Proof,
         den_h1_base: &Fr,
@@ -301,12 +304,12 @@ impl Inversion {
         eval_l1_base: &Fr,
     ) -> Self {
         let mut accumulator = Self::accumulator(
-            &den_h1_base,
-            &den_h2_base,
-            &zh,
-            &li_s0,
-            &li_s1,
-            &li_s2,
+            den_h1_base,
+            den_h2_base,
+            zh,
+            li_s0,
+            li_s1,
+            li_s2,
             eval_l1_base,
         );
 
@@ -321,7 +324,7 @@ impl Inversion {
             li_s0,
             li_s1,
             li_s2,
-            &eval_l1_base,
+            eval_l1_base,
         )
     }
 }

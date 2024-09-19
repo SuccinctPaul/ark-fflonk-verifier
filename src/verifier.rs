@@ -5,6 +5,7 @@ use crate::inversion::Inversion;
 use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
 use crate::proof::Proof;
+use crate::transcript::TranscriptHash;
 use crate::utils::{compute_a1, compute_lagrange, compute_pi};
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
@@ -18,14 +19,14 @@ use ark_bn254::Fr;
 ///  @is_recursive_verifier:
 ///       if true, will leverage power of `prove and verify pairing`.
 ///       if false, will use default pairing.
-pub fn fflonk_verifier(
+pub fn fflonk_verifier<T: TranscriptHash>(
     vk: &VerificationKey,
     proof: &Proof,
     pub_input: &Fr,
     is_recursive_verifier: bool,
 ) -> bool {
     // 1. compute challenge
-    let challenges = Challenges::compute(&vk, proof, &pub_input);
+    let challenges = Challenges::compute::<T>(vk, proof, pub_input);
 
     // 2. compute inversion
     //     Compute public input polynomial evaluation PI(xi) = \sum_i^l -public_input_i·L_i(xi)
@@ -35,7 +36,7 @@ pub fn fflonk_verifier(
     let L_1 = compute_lagrange(&challenges.zh, &inv_tuple.eval_l1);
 
     // 4. Compute public input polynomial evaluation PI(xi) = PI(xi) = -\sum_i^l public_input_i·L_i(xi)
-    let pi = compute_pi(&vec![*pub_input], &vec![L_1]);
+    let pi = compute_pi(&[*pub_input], &[L_1]);
 
     // 5. Computes r1(y) and r2(y)
     let (R0, R1, R2) = compute_r(vk, proof, &challenges, &inv_tuple, &L_1, &pi);
