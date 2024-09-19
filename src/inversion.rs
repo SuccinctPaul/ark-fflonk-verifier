@@ -81,7 +81,7 @@ impl Inversion {
             &li_s2,
             &eval_l1_base,
         );
-        #[cfg(not(feature = "blake3"))]
+
         assert_eq!(eval_l1_base * res.eval_l1, Fr::one());
 
         res
@@ -231,7 +231,7 @@ impl Inversion {
         // acc = inv*eval
         acc = acc.mul(eval_l1_base.clone());
         let eval_l1_inv = inv;
-        #[cfg(feature = "keccak256")]
+
         assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
 
         let mut local_li_s2_inv = [Fr::zero(); 6];
@@ -272,13 +272,11 @@ impl Inversion {
             li_s1_inv: local_li_s1_inv,
             li_s2_inv: local_li_s2_inv,
         };
-        #[cfg(feature = "keccak256")]
-        {
-            assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
-            assert_eq!(zh * &Z_H, Fr::one());
-            assert_eq!(local_den_h1 * den_h1_base, Fr::one());
-            assert_eq!(local_den_h2 * den_h2_base, Fr::one());
-        }
+
+        assert_eq!(eval_l1_inv * eval_l1_base, Fr::one());
+        assert_eq!(zh * &Z_H, Fr::one());
+        assert_eq!(local_den_h1 * den_h1_base, Fr::one());
+        assert_eq!(local_den_h2 * den_h2_base, Fr::one());
 
         Self {
             eval_l1: eval_l1_inv,
@@ -311,7 +309,7 @@ impl Inversion {
             &li_s2,
             eval_l1_base,
         );
-        // #[cfg(feature = "keccak256")]
+
         Self::check_accumulator(&accumulator, proof);
 
         Self::inverse_with_accumulator(
