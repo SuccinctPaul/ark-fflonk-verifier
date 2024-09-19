@@ -333,4 +333,96 @@ mod test {
 
         assert_eq!(actual_biguint_bytes, expect_biguint);
     }
+
+    #[test]
+    fn test_compute_beta() {
+        let xi_seed = Fr::from_str(
+            "12675309311304482509247823029963782393309524866265275290730041635615278736000",
+        )
+        .unwrap();
+        let ql = Fr::from_str(
+            "4305584171954448775801758618991977283131671407134816099015723841718827300684",
+        )
+        .unwrap();
+        let qr = Fr::from_str(
+            "12383383973686840675128398394454489421896122330596726461131121746926747341189",
+        )
+        .unwrap();
+        let qm = Fr::from_str(
+            "84696450614978050680673343346456326547032107368333805624994614151289555853",
+        )
+        .unwrap();
+        let qo = Fr::from_str(
+            "3940439340424631873531863239669720717811550024514867065774687720368464792371",
+        )
+        .unwrap();
+        let qc = Fr::from_str(
+            "16961785810060156933739931986193776143069216115530808410139185289490606944009",
+        )
+        .unwrap();
+        let s1 = Fr::from_str(
+            "12474437127153975801320290893919924661315458586210754316226946498711086665749",
+        )
+        .unwrap();
+        let s2 = Fr::from_str(
+            "599434615255095347665395089945860172292558760398201299457995057871688253664",
+        )
+        .unwrap();
+        let s3 = Fr::from_str(
+            "16217604511932175446614838218599989473511950977205890369538297955449224727219",
+        )
+        .unwrap();
+        let a = Fr::from_str(
+            "7211168621666826182043583595845418959530786367587156242724929610231435505336",
+        )
+        .unwrap();
+        let b = Fr::from_str(
+            "848088075173937026388846472327431819307508078325359401333033359624801042",
+        )
+        .unwrap();
+        let c = Fr::from_str(
+            "18963734392470978715233675860777231227480937309534365140504133190694875258320",
+        )
+        .unwrap();
+        let z = Fr::from_str(
+            "2427313569771756255376235777000596702684056445296844486767054635200432142794",
+        )
+        .unwrap();
+        let zw = Fr::from_str(
+            "8690328511114991742730387856275843464438882369629727414507275814599493141660",
+        )
+        .unwrap();
+        let t1w = Fr::from_str(
+            "20786626696833495453279531623626288211765949258916047124642669459480728122908",
+        )
+        .unwrap();
+        let t2w = Fr::from_str(
+            "12092130080251498309415337127155404037148503145602589831662396526189421234148",
+        )
+        .unwrap();
+
+        let concatenated = vec![
+            xi_seed.into_bigint().to_bytes_be(),
+            ql.into_bigint().to_bytes_be(),
+            qr.into_bigint().to_bytes_be(),
+            qm.into_bigint().to_bytes_be(),
+            qo.into_bigint().to_bytes_be(),
+            qc.into_bigint().to_bytes_be(),
+            s1.into_bigint().to_bytes_be(),
+            s2.into_bigint().to_bytes_be(),
+            s3.into_bigint().to_bytes_be(),
+            a.into_bigint().to_bytes_be(),
+            b.into_bigint().to_bytes_be(),
+            c.into_bigint().to_bytes_be(),
+            z.into_bigint().to_bytes_be(),
+            zw.into_bigint().to_bytes_be(),
+            t1w.into_bigint().to_bytes_be(),
+            t2w.into_bigint().to_bytes_be(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+        let alpha = Blake3TranscriptHash::hash_to_fr(concatenated);
+        println!("alpha: {:?}", alpha.to_string());
+    }
 }
