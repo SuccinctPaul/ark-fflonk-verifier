@@ -6,7 +6,6 @@ use ark_bn254::{Fr, G1Affine};
 use ark_ec::{AffineRepr, CurveGroup};
 use num_traits::One;
 
-#[allow(non_snake_case)]
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct FEJ {
     // [F]_1: full batched polynomial commitment

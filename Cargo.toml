@@ -21,20 +21,20 @@ serde_json = "1.0.114"
 tiny-keccak = { version = "2.0", features = ["keccak"] }
 blake3 = "1.5.4"
 
-on-proving-pairings = {git="https://github.com/SuccinctPaul/on-proving-pairings.git",tag= "v0.1.0", package = "on-proving-pairings"}
+on-proving-pairings = { git = "https://github.com/SuccinctPaul/on-proving-pairings.git", tag = "v0.1.0", package = "on-proving-pairings" }
 
 anyhow = "1.0.86"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 hex = "0.4.3"
-
+cargo-husky = { version = "1.5.0", default-features = false, features = ["prepush-hook", "run-cargo-fmt", "run-cargo-check"] }
 
 [patch.crates-io]
-ark-ff = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git",  branch = "v0.4.2"}
-ark-ec = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git",  branch = "v0.4.2"}
-ark-serialize = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git",  branch = "v0.4.2"}
-ark-poly = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git",  branch = "v0.4.2"}
+ark-ff = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git", branch = "v0.4.2" }
+ark-ec = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git", branch = "v0.4.2" }
+ark-serialize = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git", branch = "v0.4.2" }
+ark-poly = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git", branch = "v0.4.2" }
 
 
 [[bench]]
