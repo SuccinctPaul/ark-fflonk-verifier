@@ -18,8 +18,7 @@ pub fn compute_zero_poly_evals(xi: &Fr, n: &Fr) -> Fr {
     let xin = xi.pow(n.into_bigint());
 
     // 2. zh = xin - 1
-    let zh = xin - Fr::one();
-    zh
+    xin - Fr::one()
 }
 
 // Compute Lagrange polynomial evaluation

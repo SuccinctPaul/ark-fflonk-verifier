@@ -2,7 +2,7 @@ pub mod root;
 
 use crate::vk::VerificationKey;
 use ark_bn254::{Fr, G1Affine};
-use ark_ff::{BigInteger, Field, One, PrimeField};
+use ark_ff::{BigInteger, Field, PrimeField};
 use num_bigint::BigInt;
 use std::fmt;
 
