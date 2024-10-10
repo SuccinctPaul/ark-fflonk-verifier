@@ -34,6 +34,8 @@ pub fn compute_r(
     (R0, R1, R2)
 }
 
+// Compute r0(y) = ∑⁸ C0(h0w8_i)Li(y)
+//
 // Compute r0(y) by interpolating the polynomial r0(X) using 8 points (x,y)
 // where x = {h9, h0w8, h0w8^2, h0w8^3, h0w8^4, h0w8^5, h0w8^6, h0w8^7}
 // and   y = {C0(h0), C0(h0w8), C0(h0w8^2), C0(h0w8^3), C0(h0w8^4), C0(h0w8^5), C0(h0w8^6), C0(h0w8^7)}
@@ -59,6 +61,9 @@ pub fn calculateR0(proof: &Proof, challenges: &Challenges, li_s0_inv: [Fr; 8]) -
     //                      + (h0w8[i])^5 S1 + (h0w8[i])^6 S2 + (h0w8[i])^7 S3
     polynomial_eval(num, &coefficients, &challenges.roots.h0w8, &li_s0_inv, None)
 }
+
+// Compute r1(y) = ∑⁴ C1(h1w4_i)Li(y)
+
 // Compute r1(y) by interpolating the polynomial r1(X) using 4 points (x,y)
 // where x = {h1, h1w4, h1w4^2, h1w4^3}
 // and   y = {C1(h1), C1(h1w4), C1(h1w4^2), C1(h1w4^3)}
@@ -85,6 +90,8 @@ pub fn calculateR1(
     polynomial_eval(num, &coefficients, &challenges.roots.h1w4, &li_s1_inv, None)
 }
 
+// Compute r2(y) = ∑³ C2(h2w3_i)Li(y) + ∑³ C2(h3w3_i)Li(y)
+//
 // Compute r2(y) by interpolating the polynomial r2(X) using 6 points (x,y)
 // where x = {[h2, h2w3, h2w3^2], [h3, h3w3, h3w3^2]}
 // and   y = {[C2(h2), C2(h2w3), C2(h2w3^2)], [CChallenges::C0x.into_fr()2(h3), C2(h3w3), C2(h3w3^2)]}

@@ -19,6 +19,7 @@ ark-poly = { git = "https://github.com/SuccinctPaul/arkworks-algebra.git",  bran
 
 ## References
 * https://github.com/arielgabizon/fflonk
+* https://hackmd.io/@Wimet/SJcYXj_Uo#Full-Description-of-the-Protocol
 * https://github.com/0xPolygonHermez/zkevm-contracts/tree/main/contracts/verifiers
 * https://github.com/RizeLabs/sp1-verifier
 * https://github.com/availproject/Henosis

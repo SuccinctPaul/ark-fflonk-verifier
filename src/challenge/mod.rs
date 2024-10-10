@@ -2,13 +2,14 @@ pub mod root;
 
 use crate::vk::VerificationKey;
 use ark_bn254::{Fr, G1Affine};
-use ark_ff::{BigInteger, Field, One, PrimeField};
+use ark_ff::{BigInteger, Field, PrimeField};
 use num_bigint::BigInt;
 use std::fmt;
 
 use crate::challenge::root::Roots;
 use crate::proof::{Evaluations, Proof};
 use crate::transcript::TranscriptHash;
+use crate::utils::compute_zero_poly_evals;
 use ark_ec::CurveGroup;
 use std::str::FromStr;
 
@@ -23,35 +24,27 @@ pub struct Challenges {
     pub roots: Roots,
 }
 impl Challenges {
-    // compute challenge and roots:
+    // compute challenge, roots and zero_poly_eval zh:
     //  beta, gamma, xi, alpha and y ∈ F, h1w4/h2w3/h3w3 roots, xiN and zh(xi)
     pub fn compute<T: TranscriptHash>(vk: &VerificationKey, proof: &Proof, pub_input: &Fr) -> Self {
-        // 1. compute beta: keccak_hash with c0, pub_input, c1
+        // Compute challenges beta,gamma,xi,alpha,y ∈ 𝐹 as in prover description, from the common inputs, public input, and the elements of 𝜋_SNARK
+
+        // 1 compute beta: keccak_hash with c0, pub_input, c1
         let beta = Self::compute_beta::<T>(&vk.c0, &proof.polynomials.c1.into_affine(), pub_input);
         // 2. compute gamma: keccak_hash with beta
         let gamma = Self::compute_gamma::<T>(&beta);
 
-        // 3. compute xi_seed: keccak_hash with gamma,c2
+        // 3. compute xi
+        //      compute xi_seed: keccak_hash with gamma,c2
         let xi_seed = Self::compute_xiseed::<T>(&gamma, proof.polynomials.c2.into_affine());
+        //      compute xi=xi_seeder^24
+        let xi = xi_seed.pow([24]);
+
         // 4. compute alpha: keccak_hash with xi_seed, eval_lines
         let alpha = Self::compute_alpha::<T>(&xi_seed, &proof.evaluations);
 
         // 5. compute y: keccak_hash with alpha, w1
         let y = Self::compute_y::<T>(&alpha, &proof.polynomials.w1.into_affine());
-
-        /////////////////////////////////////////////
-        // beta, gamma, xi, alpha, y
-        //////////// Above is keccak hash
-        /////////////////////////////////////////////
-
-        // 6. compute xi=xi_seeder^24
-        let xi = xi_seed.pow([24]);
-
-        // 7. Compute xin = xi^n
-        let xin = xi.pow(vk.n.into_bigint());
-
-        // 8. zh = xin - 1
-        let zh = xin - Fr::one();
 
         Challenges {
             alpha,
@@ -59,7 +52,7 @@ impl Challenges {
             gamma,
             y,
             xi,
-            zh,
+            zh: compute_zero_poly_evals(&xi, &vk.n),
             roots: Roots::compute(vk, &xi_seed),
         }
     }
