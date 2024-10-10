@@ -3,6 +3,7 @@ use crate::compute_fej::FEJ;
 use crate::proof::Proof;
 use ark_bn254::{Fr, G1Affine};
 use ark_ec::CurveGroup;
+use ark_ff::{Field, PrimeField};
 use num_traits::{One, Zero};
 use std::fs::File;
 use std::io::Read;
@@ -10,11 +11,49 @@ use std::ops::Neg;
 use std::path::Path;
 use std::str::FromStr;
 
-// Compute Lagrange polynomial evaluation L_i(xi)
-// Equation:
-//      [zh * Li_1, zh * Li_2 * w]
-pub fn compute_lagrange(zh: &Fr, Li_inv: &Fr) -> Fr {
-    zh * Li_inv
+// Compute zero polynomial evaluation
+//      Z_H(xi) = xi^n - 1
+pub fn compute_zero_poly_evals(xi: &Fr, n: &Fr) -> Fr {
+    // 1. Compute xin = xi^n
+    let xin = xi.pow(n.into_bigint());
+
+    // 2. zh = xin - 1
+    let zh = xin - Fr::one();
+    zh
+}
+
+// Compute Lagrange polynomial evaluation
+//      Li(xi)= w(x^n-1)/(n*(xi-w)
+//            = w*zh/(n*(xi-w)
+//
+// Note: w means omega
+pub struct LangrangePolynomialEvaluation;
+impl LangrangePolynomialEvaluation {
+    // Compute Langrange polynomial evaluation base:
+    //      Li_base = n * (xi - omega)
+    // eg:
+    //  Li_1_base = n * (xi - 1), which omega=w0=1
+    //  Li_2_base = n * (xi - w1), which omega = w1
+    pub fn compute_lagrange_base(xi: &Fr, n: &Fr, omega: &Fr) -> Fr {
+        (xi - omega) * n
+    }
+    pub fn compute_L1_base(xi: &Fr, n: &Fr) -> Fr {
+        Self::compute_lagrange_base(xi, n, &Fr::one())
+    }
+
+    // Compute Lagrange polynomial evaluation L_i(xi)
+    //      Li = omega * zh * Li_base
+    //
+    // eg:
+    //  Li_1 = zh * Li_1_base_inv, which omega=w0=1
+    //  Li_2 = w1 * zh * Li_2_base_inv , which omega = w1
+    pub fn compute_lagrange_polynomial_evaluation(zh: &Fr, Li_inv: &Fr, omega: &Fr) -> Fr {
+        omega * zh * Li_inv
+    }
+
+    pub fn compute_L1_polynomial_evaluation(zh: &Fr, L1_base_inv: &Fr) -> Fr {
+        Self::compute_lagrange_polynomial_evaluation(zh, L1_base_inv, &Fr::one())
+    }
 }
 
 // Compute public input polynomial evaluation `PI(xi)`:

@@ -1,5 +1,6 @@
 use crate::challenge::{root::Roots, Challenges};
 use crate::proof::Proof;
+use crate::utils::LangrangePolynomialEvaluation;
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
 use ark_ff::{Field, One, Zero};
@@ -36,16 +37,6 @@ impl Inversion {
             * (y - &roots.h3w3[2])
     }
 
-    // Li_2 = n * (xi - 1)
-    pub fn compute_eval_l1_base(xi: &Fr, n: &Fr) -> Fr {
-        (xi - &Fr::one()) * n
-    }
-
-    // Li_2 = n * (xi - w1)
-    pub fn compute_eval_l2_base(xi: &Fr, n: &Fr, w1: &Fr) -> Fr {
-        (xi - w1) * n
-    }
-
     // To divide prime fields the Extended Euclidean Algorithm for computing modular inverses is needed.
     // The Montgomery batch inversion algorithm allow us to compute n inverses reducing to a single one inversion.
     // More info: https://vitalik.ca/general/2018/07/21/starks_part_3.html
@@ -69,7 +60,8 @@ impl Inversion {
 
         let li_s2 = Self::compute_li_s2(vk, y, xi, &roots.h2w3, &roots.h3w3);
 
-        let eval_l1_base = Self::compute_eval_l1_base(&xi, &vk.n);
+        // TODO move it outside.
+        let eval_l1_base = LangrangePolynomialEvaluation::compute_L1_base(&xi, &vk.n);
 
         let res = Self::inverse_array(
             proof,

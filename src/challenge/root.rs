@@ -4,6 +4,7 @@ use std::fmt;
 use crate::vk::VerificationKey;
 use std::ops::Mul;
 
+//
 #[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub struct Roots {
     pub h0w8: [Fr; 8],

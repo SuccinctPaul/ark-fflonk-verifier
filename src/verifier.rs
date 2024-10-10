@@ -6,7 +6,7 @@ use crate::pairing::{check_pairing, prove_and_verify_pairing};
 
 use crate::proof::Proof;
 use crate::transcript::TranscriptHash;
-use crate::utils::{compute_a1, compute_lagrange, compute_pi};
+use crate::utils::{compute_a1, compute_pi, LangrangePolynomialEvaluation};
 use crate::vk::VerificationKey;
 use ark_bn254::Fr;
 
@@ -33,7 +33,10 @@ pub fn fflonk_verifier<T: TranscriptHash>(
     let inv_tuple = Inversion::build(vk, proof, &challenges);
 
     // 3. compute lagrange of L_1
-    let L_1 = compute_lagrange(&challenges.zh, &inv_tuple.eval_l1);
+    let L_1 = LangrangePolynomialEvaluation::compute_L1_polynomial_evaluation(
+        &challenges.zh,
+        &inv_tuple.eval_l1,
+    );
 
     // 4. Compute public input polynomial evaluation PI(xi) = PI(xi) = -\sum_i^l public_input_i·L_i(xi)
     let pi = compute_pi(&[*pub_input], &[L_1]);
